@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Document   : main
+    Created on : 21.02.2013, 21:05:23
+    Author     : Artem
+-->
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions" version="2.0">
+
+	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
+
+	<link href="styles/main.css" rel="stylesheet" type="text/css" />
+	
+	<fmt:setBundle basename="pagecontent" var="rb" />
+	<html>
+<head>
+<title>Hello !</title>
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
+<script type="text/javascript">
+	function expandAll() {
+
+		<c:forEach var="elem" items="${categories}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+		$('#ANIMATION1DIV_${status.count}').show('normal', function() {
+		});
+		</c:forEach>
+
+	}
+	function colapseAll() {
+
+		<c:forEach var="elem" items="${categories}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+		$('#ANIMATION1DIV_${status.count}').hide('normal', function() {
+		});
+		</c:forEach>
+
+	}
+	function showAddCategoryDialog() {
+		closeAddCategoryStatus();
+		$('#addCategoryDialog').show('normal', function() {
+		});
+	}
+	function closeAddCategoryDialog() {
+		$('#addCategoryDialog').hide('normal', function() {
+		});
+	}
+	function closeAddCategoryStatus() {
+		$('#addCategoryStatus').hide('normal', function() {
+		});
+	}
+	function openAssignUserToCommunityDialog(id) {
+		closeAssignUserStatus();
+		closeAssignTestStatus();
+		document.getElementById('assignUserCommIdParam').value=id;
+    	$('#assignUserDialog').show('normal', function() {
+		});
+	}
+	function closeAssignTestDialog() {
+		$('#assignTestDialog').hide('normal', function() {
+		});
+	}
+	function closeAssignTestStatus() {
+		$('#assignTestStatus').hide('normal', function() {
+		});
+	}
+	window.onload = function () {
+		<c:if test="${not empty addCategoryStatus}">
+		$('#addCategoryStatus').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty assignTestToCategoryDialog}">
+		$('#assignTestDialog').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty assignTestToCategoryStatus}">
+		$('#assignTestStatus').show('normal', function() {
+		});
+		</c:if> 
+				   
+				}
+
+</script>
+
+</head>
+<body>
+	<c:import url="/WEB-INF/jsp/header.jspx" />
+	
+	<div style="padding: 20px 20px">
+	
+	<div>
+			<div id="assignTestStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+
+				<c:set var="assignTestStatusValue"
+					value="${assignTestStatus == true ? 'tutor.categories.assignTestStatusOk': 'tutor.categories.assignTestStatusFail'}" />
+				<fmt:message key="${assignTestStatusValue}" bundle="${rb}"
+					var="assignTestStatusText" />
+				<h4>
+					${assignTestStatusText} <a href="#"
+						onclick="closeAssignTestStatus()" class="closeMeLink right close">&#160;</a>
+				</h4>
+
+				<div class="clearheight"></div>
+			</div>
+		</div>
+		<div>
+			<div id="assignTestDialog"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<fmt:message key="tutor.categories.assignNewTest" bundle="${rb}"
+					var="assignTestText" />
+				<h4>
+					${assignTestText}&#160;"${categoryName}" <a href="#"
+						onclick="closeAssignTestDialog()" class="closeMeLink right close">&#160;</a>
+				</h4>
+				<form id="dosubmit_addCategory" action="pages" method="post">
+					<input type="hidden" name="command" value="assignTestToCategory" />
+					<input id="assignTestCommIdParam" type="hidden" name="categoryId"
+						value="${categoryId}" />
+					<div class="field-group">
+
+						<select id="test_select" name="testId" class="cats_in_qb_filter">
+							<option value="-1">Select test</option>
+							<c:forEach var="elemTest" items="${tests}" varStatus="status">
+								<option value="${elemTest.testId}">${elemTest.testName}</option>
+							</c:forEach>
+						</select>
+
+						<fmt:message key="tutor.categories.assignTest" bundle="${rb}"
+							var="assignTestText" />
+						<label class="form-field-title" for="category_name">${assignTestText}:</label>
+				</div>
+					<div class="field-group">
+						<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+
+
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+
+					</div>
+				</form>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+	
+	
+	<div>
+	<div id="addCategoryStatus"
+		class="hide top_hidden_box_div closeMeContainer"
+		style="display:none;">
+		
+			<c:set var="addCategoryStatusValue"
+					value="${addCategoryStatus == true ? 'tutor.categories.addNewCategoryStatusOk': 'tutor.categories.addNewCategoryStatusFail'}" />	
+					<fmt:message key="${addCategoryStatusValue}" bundle="${rb}"
+							var="addNewCategoryStatusText" />			
+		<h4>
+			${addNewCategoryStatusText} <a href="#" onclick="closeAddCategoryStatus()" class="closeMeLink right close">&#160;</a>
+		</h4>
+		
+		<div class="clearheight"></div>
+	</div>
+	</div>
+	<div>
+	<div id="addCategoryDialog"
+		class="hide top_hidden_box_div closeMeContainer"
+		style="display: none;">
+		<fmt:message key="tutor.categories.addNewCategory" bundle="${rb}"
+							var="addNewCategoryText" />
+		<h4>
+			${addNewCategoryText} <a href="#" onclick="closeAddCategoryDialog()" class="closeMeLink right close">&#160;</a>
+		</h4>
+		<form id="dosubmit_addCategory" action="pages" method="post">
+		<input type="hidden" name="command" value="newCategory" />
+			<div class="field-group">
+			<fmt:message key="tutor.categories.categoryName" bundle="${rb}"
+							var="categoryNameText" />
+				<label class="form-field-title" for="category_name">${categoryNameText}:</label> <input type="text" name="cat_name" size="30" maxlength="30"
+					class="checkEmpty limitchars_refname_30 input" id="category_name" />
+					<fmt:message key="tutor.categories.addCategoryTip" bundle="${rb}"
+							var="addCategoryTipText" />
+				<span class="showTooltip tooltip"
+					title="${addCategoryTipText}">Tip</span>
+					<fmt:message key="tutor.categories.maximumCharacters" bundle="${rb}"
+							var="maximumCharactersText" />
+				<span class="refname_info">${maximumCharactersText}</span>
+			</div>
+			<div class="field-group">
+			<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+							
+						
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+					
+			</div>
+		</form>
+		<div class="clearheight"></div>
+	</div>
+	</div>
+	
+	
+		<ul class="cmtableTabs">
+
+			<c:forEach var="elem" items="${menu}" varStatus="status">
+				<c:set var="tabOnOf"
+					value="${elem.active == false ? 'taboff': 'tabon'}" />
+				<li class="${tabOnOf}">
+					<form id="myHiddenFormId" action="pages" method="post">
+						<input type="hidden" name="command" value="${elem.command}" />
+						<fmt:message key="${elem.menuText}" bundle="${rb}"
+							var="menuItemText" />
+						<input class="menuItemButton" type="submit"
+							value="${menuItemText} (${elem.itemsCount})" />
+					</form>
+				</li>
+			</c:forEach>
+
+		</ul>
+		<div class="table">
+			<div class="table-utility row">
+				<div class="col-span-1">
+					<div class="dropdown dropdown-x hide_if_no_data">
+						<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+						<ul class="dropdown-menu">
+							<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+									All</a></li>
+							<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+									All</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-span-7">
+					<span id="cat_filter" class="search_filter hide_if_no_data"></span>
+					<span class="hide_if_no_data  not-ie67"> <input type="text"
+						id="test_search" placeholder="Search Test Name"
+						class="hide_if_no_data" /> <span class="only-ie little">Search
+							Test Name</span></span>
+				</div>
+				<div class="col-span-2 col-btns">
+				<fmt:message key="tutor.categories.newCategory" bundle="${rb}"
+							var="newCategoryText" />
+				<a href="#" onclick="showAddCategoryDialog()"
+						class="btn btn-create">${newCategoryText}</a>
+				</div>
+			</div>
+
+			<!-- TESTS LIST: START -->
+			<ul class="table-body">
+
+				<c:forEach var="elem" items="${categories}" varStatus="status">
+
+					<li>
+						<div id="ANIMATIONBUTTON_${status.count}"
+							class="row accordion-toggle scrollTop test_container closed">
+							<div class="col-span-6">
+								<h4 class="test-name name">${elem.categoryName}</h4>
+							</div>
+							<div class="col-span-4 col-btns">
+								<div class="inlineBox">
+									<div>
+										<form id="myHiddenFormId" action="pages" method="post">
+											<input type="hidden" name="command" value="editTest" /> <input
+												type="hidden" name="categoryId" value="${elem.categoryId}" />
+											<fmt:message key="tutor.test.edit" bundle="${rb}"
+												var="editText" />
+											<input class="simpleBtnLink" type="submit"
+												value="${editText}" />
+										</form>
+									</div>
+
+								</div>
+							</div>
+							<span class="caret">&#160;</span>
+						</div>
+						<div id="ANIMATION1DIV_${status.count}"
+							class="accordion-fold subrow-container test_groups hide"
+							style="display: none;">
+							<!-- hidden for now -->
+							<div class="row hint ">
+								<div class="col-span-6 ">
+									<fmt:message key="tutor.test.assignedTo" bundle="${rb}"
+										var="assignedToText" />
+									<fmt:message key="tutor.categories.tests" bundle="${rb}"
+										var="testsText" />
+									<div>${assignedToText}&#160;${testsText}:&#160;(${fn:length(elem.tests)})</div>
+								</div>
+								<div class="col-span-10 col-btns">
+									<div>
+										<form id="myHiddenFormId" action="pages" method="post">
+											<input type="hidden" name="command"
+												value="assignTestToCategoryDialog" /> <input type="hidden"
+												name="categoryId" value="${elem.categoryId}" /> <input
+												type="hidden" name="categoryName"
+												value="${elem.categoryName}" />
+											<fmt:message key="tutor.test.assign" bundle="${rb}"
+												var="assignText" />
+											<input class="simpleBtnLink red" type="submit"
+												value="${assignText}" />
+										</form>
+									</div>
+								</div>
+							</div>
+							<ul class="groups_links_list hover-row">
+								<c:forEach var="category" items="${elem.tests}"
+									varStatus="statusCategories">
+
+
+									<li class="row">
+										<div class="col-span-6">
+
+											<form class="group-name name" id="myHiddenFormId"
+												action="pages" method="post">
+												<input type="hidden" name="command" value="value" /> <input
+													class="menuItemButton" type="submit"
+													value="${category.testName}" />
+											</form>
+
+										</div>
+									</li>
+								</c:forEach>
+
+							</ul>
+
+
+						</div> <script>
+							$('#ANIMATIONBUTTON_${status.count}')
+									.click(
+											function() {
+												var className = document
+														.getElementById('ANIMATIONBUTTON_${status.count}').className;
+												if (className == 'row accordion-toggle scrollTop test_container closed') {
+													document
+															.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+												} else {
+													document
+															.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+
+												}
+
+												$(
+														'#ANIMATION1DIV_${status.count}')
+														.toggle('normal',
+																function() {
+																});
+											});
+						</script>
+
+					</li>
+
+
+
+
+
+				</c:forEach>
+
+			</ul>
+
+
+			<div class="table-utility row bellow">
+				<div class="col-span-8">
+					<div class="dropdown dropdown-x hide_if_no_data_bottom">
+						<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+						<ul class="dropdown-menu">
+							<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+									All</a></li>
+							<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+									All</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-span-2 col-btns hide_if_no_data_bottom">
+				<a href="#" onclick="showAddCategoryDialog()"
+						class="btn btn-create">${newCategoryText}</a>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+	</html>
+
+</jsp:root>

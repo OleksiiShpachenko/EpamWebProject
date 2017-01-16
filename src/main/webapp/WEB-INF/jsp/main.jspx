@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Document   : main
+    Created on : 21.02.2013, 21:05:23
+    Author     : Artem
+-->
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core" 
+	xmlns:fmt= "http://java.sun.com/jsp/jstl/fmt" version="2.0" >
+
+	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
+<!--<fmt:setLocale value="en_US" scope="session" />-->
+<fmt:setBundle basename="pagecontent" var="rb" />
+	<html>
+<head>
+<title>Hello !</title>
+</head>
+<body>
+<c:import url="/WEB-INF/jsp/header.jspx" />
+<jsp:useBean id="now" class="java.util.Date" />
+
+Вывод даты в формате English<br/>
+Сегодня: <fmt:formatDate value="${now}" /><br/>
+	<h3><fmt:message key="label.title" bundle="${ rb }" /></h3>
+	<hr />
+	
+	<c:out value="${user}, Hello!" />
+	<form id="myHiddenFormId" action="pages" method="post">
+		<input type="hidden" name="command" value="tests"/>
+		<input type="submit" value=" (${testsCount})" />
+	</form>
+	<c:import url="/WEB-INF/jsp/tutorLeftMenu.jspx" />
+	
+
+
+</body>
+	</html>
+
+</jsp:root>

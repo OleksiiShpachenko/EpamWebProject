@@ -1,0 +1,41 @@
+@charset "windows-1251";
+/* CSS Document */
+
+body {
+	
+	background: url(../images/people_background.jpg) repeat;
+	
+}
+
+.lang_button {
+	border: 1px solid #98ccfb;
+	padding: 2px 8px 2px 8px;
+	display: inline;
+	margin: 1px;
+	width:100%
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 3em; /* 3% of viewport width */
+	color: #003399;
+	border-image: initial;
+	background-color: white;
+	background-image: url(Ukraine.png);
+}
+.lang_button1 {
+	background-size: cover;
+  border: none;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background-color: transparent;
+}
+.line {
+    border: none; /* Убираем границу */
+    background-color: #07a1f1; /* Цвет линии */
+    color: #07a1f1; /* Цвет линии для IE6-7 */
+    height: 10px; /* Толщина линии */
+   }
+   #header_wrapper{
+    background-color: white; /* Цвет линии */
+    color: white; /* Цвет линии для IE6-7 */
+   }
