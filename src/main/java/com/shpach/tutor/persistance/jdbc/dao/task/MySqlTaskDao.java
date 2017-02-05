@@ -13,6 +13,7 @@ import com.shpach.tutor.persistance.entities.Task;
 import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
 
+
 public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 	private static final Logger logger = Logger.getLogger(MySqlTaskDao.class);
 
@@ -55,6 +56,20 @@ public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 			+ Columns.task_datetime_stop.name() + "=?, " + Columns.task_score.name() + "=?, "
 			+ Columns.task_category_id.name() + "=? WHERE " + Columns.task_id.name() + "=?";
 
+	private static MySqlTaskDao instance = null;
+
+	private MySqlTaskDao() {
+
+	}
+
+	public static synchronized MySqlTaskDao getInstance() {
+		if (instance == null)
+			return instance = new MySqlTaskDao();
+		else
+			return instance;
+
+	}
+	
 	@Override
 	protected Task populateDto(ResultSet rs) throws SQLException {
 		Task dto = new Task();

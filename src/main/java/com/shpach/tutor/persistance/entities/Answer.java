@@ -88,6 +88,7 @@ public class Answer implements Serializable {
 
 	public void setQuestion(Question question) {
 		this.question = question;
+		setQuestionId(question.getQuestionId());
 	}
 	public int getQuestionId() {
 		return this.questionId;

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.shpach.tutor.persistance.entities.QuestionLog;
 import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
+import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
 
 public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQuestionLogDao {
 	private static final Logger logger = Logger.getLogger(MySqlQuestionLogDao.class);
@@ -42,7 +43,21 @@ public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQu
 	protected final String SQL_UPDATE = "UPDATE " + TABLE_NAME + " SET " + Columns.task_id.name() + "=?, "
 			+ Columns.question_id.name() + "=?, " + Columns.question_log_sorting_order.name() + "=? WHERE "
 			+ Columns.question_log_id.name() + "=?";
+	
+	private static MySqlQuestionLogDao instance = null;
 
+	private MySqlQuestionLogDao() {
+
+	}
+
+	public static synchronized MySqlQuestionLogDao getInstance() {
+		if (instance == null)
+			return instance = new MySqlQuestionLogDao();
+		else
+			return instance;
+
+	}
+	
 	@Override
 	protected QuestionLog populateDto(ResultSet rs) throws SQLException {
 		// TODO Auto-generated method stub
@@ -51,12 +66,11 @@ public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQu
 
 	@Override
 	public QuestionLog addOrUpdate(QuestionLog questionLog) {
-		//ConnectionPool pool = ConnectionPool.getInstance();
 		Connection connection = null;
 		QuestionLog questionLogNew = null;
 
 		try {
-			connection = ConnectionPool.getConnection();//pool.getConnection();
+			connection = ConnectionPool.getConnection();
 			connection.setAutoCommit(false);
 			questionLogNew = addOrUpdate(questionLog, connection);
 			connection.setAutoCommit(true);

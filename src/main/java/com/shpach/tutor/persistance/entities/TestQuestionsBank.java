@@ -57,6 +57,7 @@ public class TestQuestionsBank implements Serializable {
 
 	public void setTest(Test test) {
 		this.test = test;
+		setTestId(test.getTestId());
 	}
 	public int getTestId() {
 		return this.testId;
@@ -71,6 +72,7 @@ public class TestQuestionsBank implements Serializable {
 
 	public void setQuestion(Question question) {
 		this.question = question;
+		setQuestionId(question.getQuestionId());
 	}
 	public int getQuestionId() {
 		return this.questionId;

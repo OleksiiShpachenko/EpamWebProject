@@ -145,6 +145,7 @@ public class Test implements Serializable {
 
 	public void setUser(User user) {
 		this.user = user;
+		setUserId(user.getUserId());
 	}
 
 	public int getUserId() {

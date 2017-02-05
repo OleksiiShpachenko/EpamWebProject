@@ -131,6 +131,7 @@ public class Task implements Serializable {
 
 	public void setUser(User user) {
 		this.user = user;
+		setUserId(user.getUserId());
 	}
 
 	public Test getTest() {

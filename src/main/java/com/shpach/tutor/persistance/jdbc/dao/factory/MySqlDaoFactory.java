@@ -67,12 +67,12 @@ public class MySqlDaoFactory implements IDaoFactory {
 
 	@Override
 	public ITaskDao getTaskDao() {
-		return new MySqlTaskDao();
+		return MySqlTaskDao.getInstance();
 	}
 
 	@Override
 	public IQuestionLogDao getQuestionLogDao() {
-		return new MySqlQuestionLogDao();
+		return MySqlQuestionLogDao.getInstance();
 	}
 
 	@Override
