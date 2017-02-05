@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<taglib xmlns="http://java.sun.com/JSP/TagLibraryDescriptor"
+
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee/ web-jsptaglibrary_2_0.xsd"
+
+	version="2.0">
+
+	<tlib-version>1.0</tlib-version>
+	<short-name>statisticstags</short-name>
+	<uri>/WEB-INF/tlds/statisticstags</uri>
+	<tag>
+		<name>studentTestToCommunityStatistic</name>
+		<tag-class>com.shpach.tutor.view.customtags.StudentTestToCommunityStatisticTag
+		</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>test</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>community</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
+		<name>studentCommunityAverageStatistic</name>
+		<tag-class>com.shpach.tutor.view.customtags.StudentCommunityAverageStatisticTag
+		</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>community</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
+		<name>tutorUserToTestStatistic</name>
+		<tag-class>com.shpach.tutor.view.customtags.TutorUserToTestStatisticTag
+		</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>community</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>userId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>testId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
+		<name>tutorUserToCommunityStatisticAverage</name>
+		<tag-class>com.shpach.tutor.view.customtags.TutorUserToCommunityStatisticAverageTag
+		</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>community</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>userId</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		
+	</tag>
+</taglib>

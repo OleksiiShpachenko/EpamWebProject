@@ -27,6 +27,11 @@ public class Config {
     public static final String TUTOR_CATEGORIES="TUTOR_CATEGORIES";
     public static final String TUTOR_COMMUNITIES="TUTOR_COMMUNITIES";
     public static final String TUTOR_QUESTIONS="TUTOR_QUESTIONS";
+    public static final String REGISTRATION="REGISTRATION";
+	public static final String TAKE_TEST = "TAKE_TEST";
+	public static final String STUDENT_TESTS = "STUDENT_TESTS";
+	public static final String STUDENT_STATISTIC = "STUDENT_STATISTIC";
+	public static final String TUTOR_STATISTIC = "TUTOR_STATISTIC";
 
     public static Config getInstance() {
         if (instance == null) {

@@ -1,16 +1,18 @@
 package com.shpach.tutor.persistance.jdbc.dao.test;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.shpach.tutor.persistance.entities.Test;
-import com.shpach.tutor.persistance.jdbc.connection.Database;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
+import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
 
 public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
+	private static final Logger logger = Logger.getLogger(MySqlTestDao.class);
+
 	protected enum Columns {
 
 		test_id(1), user_id(2), test_name(3), test_description(4), test_rnd_question(5), test_rnd_answer(6), test_type(
@@ -63,25 +65,42 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 			+ " FROM " + TABLE_NAME + ", " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + " WHERE "
 			+ TABLE_TEST_TO_CATEGORY_RELATIONSHIP + ".category_id=? AND " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + "."
 			+ Columns.test_id.name() + "=" + TABLE_NAME + "." + Columns.test_id.name();
+	
+	private static MySqlTestDao instance = null;
 
+	private MySqlTestDao() {
+
+	}
+
+	public static synchronized MySqlTestDao getInstance() {
+		if (instance == null)
+			return instance = new MySqlTestDao();
+		else
+			return instance;
+
+	}
+	
 	public List<Test> findtAll() {
 		List<Test> res = null;
 		try {
 			res = findByDynamicSelect(SQL_SELECT, null, null);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e, e);
 		}
 		return res;
 	}
 
 	public Test addOrUpdate(Test test) {
+		boolean res = false;
 		if (test.getTestId() == 0) {
-			add(test);
+			res = add(test);
 		} else {
-			update(test);
+			res = update(test);
 		}
+		if (res == false)
+			return null;
 		return test;
+
 	}
 
 	public Test findTestById(int id) {
@@ -89,8 +108,7 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 		try {
 			res = findByDynamicSelect(SQL_SELECT, Columns.test_id.name(), id);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e, e);
 		}
 		if (res != null && res.size() > 0)
 			return res.get(0);
@@ -101,12 +119,6 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 		String sql = SQL_SELECT_BY_COMMUNITY_ID;
 		return getTestByRelationshiId(sql, id);
 	}
-	/*
-	 * public List<Test> findTestByUserId(int id) { List<Test> res = null; try {
-	 * res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id); }
-	 * catch (Exception e) { // TODO Auto-generated catch block
-	 * e.printStackTrace(); } return res; }
-	 */
 
 	public List<Test> findTestByCategoryId(int id) {
 		String sql = SQL_SELECT_BY_CATEGORY_ID;
@@ -115,127 +127,34 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 
 	protected List<Test> getTestByRelationshiId(String sql, int id) {
 
-		// final boolean isConnSupplied = (userConn != null);
-		Database conn = MySqlDaoFactory.createConnection();
-		PreparedStatement stmt = null;
-		ResultSet rs = null;
-
+		List<Test> res = null;
 		try {
-
-			// System.out.println("Executing " + SQL);
-			// prepare statement
-			stmt = conn.prepareStatement(sql);
-			stmt.setObject(1, id);
-			rs = stmt.executeQuery();
-			// String executedQuery = rs.getStatement().toString();
-
-			// fetch the results
-			return fetchMultiResults(rs);
-		} catch (Exception ex) {
-			int a = 1;
-			// logger.error(ex, ex);
-			// throw new Exception("Exception: " + ex.getMessage(), ex);
-		} finally {
-			try {
-				rs.close();
-				stmt.close();
-				conn.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// ! if (!isConnSupplied) {
-			// ! connPool.returnConnection(conn);
-			// ! }
-
+			res = findByDynamicSelect(sql, new Integer[] { id });
+		} catch (Exception e) {
+			logger.error(e, e);
 		}
+		if (res != null && res.size() > 0)
+			return res;
 		return null;
 	}
 
-	private void update(Test test) {
-		PreparedStatement stmt = null;
-		Database conn = null;
-		try {
+	private boolean update(Test test) {
 
-			String queryString = SQL_UPDATE;
-			conn = MySqlDaoFactory.createConnection();
-			stmt = conn.prepareStatement(queryString);
-			stmt.setString(1, test.getTestName());
-			stmt.setInt(2, test.getUserId());
-			stmt.setString(3, test.getTestDescription());
-			stmt.setByte(4, test.getTestRndQuestion());
-			stmt.setByte(5, test.getTestRndAnswer());
-			stmt.setInt(6, test.getTestType());
-			stmt.setByte(7, test.getTestActive());
-			stmt.setInt(8, test.getTestId());
-			stmt.executeUpdate();
-			System.out.println("Data Updated Successfully");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-		}
-
+		Object[] sqlParams = new Object[] { test.getTestName(), test.getUserId(), test.getTestDescription(),
+				test.getTestRndQuestion(), test.getTestRndAnswer(), test.getTestType(), test.getTestActive(),
+				test.getTestId() };
+		return dynamicUpdate(SQL_UPDATE, sqlParams);
 	}
 
-	private void add(Test test) {
-		PreparedStatement stmt = null;
-		Database conn = null;
-		ResultSet rs = null;
-		try {
-
-			String queryString = SQL_INSERT;
-			conn = MySqlDaoFactory.createConnection();
-			// int i = conn.getConnection().getTransactionIsolation();
-			conn.getConnection().setAutoCommit(false);
-			// conn.getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-			stmt = conn.prepareStatement(queryString);
-			stmt.setString(1, test.getTestName());
-			stmt.setInt(2, test.getUserId());
-			stmt.setString(3, test.getTestDescription());
-			stmt.setByte(4, test.getTestRndQuestion());
-			stmt.setByte(5, test.getTestRndAnswer());
-			stmt.setInt(6, test.getTestType());
-			stmt.setByte(7, test.getTestActive());
-			stmt.executeUpdate();
-			stmt.close();
-			stmt = conn.prepareStatement("SELECT last_insert_id()");
-			rs = stmt.executeQuery();
-			while (rs.next()) {
-				test.setTestId(rs.getInt(1));
-			}
-			// conn.getConnection().setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-			conn.getConnection().setAutoCommit(true);
-
-			System.out.println("Data Added Successfully");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				rs.close();
-				if (stmt != null) {
-					stmt.close();
-				}
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
+	private boolean add(Test test) {
+		Object[] sqlParams = new Object[] { test.getTestName(), test.getUserId(), test.getTestDescription(),
+				test.getTestRndQuestion(), test.getTestRndAnswer(), test.getTestType(), test.getTestActive() };
+		int id = dynamicAdd(SQL_INSERT, sqlParams);
+		if (id > 0) {
+			test.setTestId(id);
+			return true;
 		}
-
+		return false;
 	}
 
 	@Override
@@ -257,8 +176,7 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 		try {
 			res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e, e);
 		}
 		return res;
 	}

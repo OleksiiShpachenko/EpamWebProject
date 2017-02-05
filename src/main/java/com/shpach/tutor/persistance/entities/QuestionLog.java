@@ -2,6 +2,8 @@ package com.shpach.tutor.persistance.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -19,8 +21,8 @@ public class QuestionLog implements Serializable {
 	@Column(name="question_log_id")
 	private int questionLogId;
 
-	@Column(name="question_default_sorting_order")
-	private int questionDefaultSortingOrder;
+	@Column(name="question_log_sorting_order")
+	private int questionLogSortingOrder;
 
 	//bi-directional many-to-one association to AnswersLog
 	@OneToMany(mappedBy="questionLog")
@@ -47,12 +49,14 @@ public class QuestionLog implements Serializable {
 		this.questionLogId = questionLogId;
 	}
 
-	public int getQuestionDefaultSortingOrder() {
-		return this.questionDefaultSortingOrder;
+	
+
+	public int getQuestionLogSortingOrder() {
+		return questionLogSortingOrder;
 	}
 
-	public void setQuestionDefaultSortingOrder(int questionDefaultSortingOrder) {
-		this.questionDefaultSortingOrder = questionDefaultSortingOrder;
+	public void setQuestionLogSortingOrder(int questionLogSortingOrder) {
+		this.questionLogSortingOrder = questionLogSortingOrder;
 	}
 
 	public List<AnswersLog> getAnswersLogs() {
@@ -64,6 +68,8 @@ public class QuestionLog implements Serializable {
 	}
 
 	public AnswersLog addAnswersLog(AnswersLog answersLog) {
+		if (getAnswersLogs()==null)
+			answersLogs= new ArrayList<>();
 		getAnswersLogs().add(answersLog);
 		answersLog.setQuestionLog(this);
 

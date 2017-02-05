@@ -20,6 +20,7 @@
 	<jsp:text />
 </script>
 <script type="text/javascript">
+	questionCounter = 0;
 	function expandAll() {
 
 		<c:forEach var="elem" items="${tests}" varStatus="status">
@@ -54,6 +55,23 @@
 		</c:forEach>
 
 	}
+	function closeAddTestDialog() {
+		$('#addTestDialog').hide('normal', function() {
+		});
+	}
+	function closeAddTestStatus() {
+		$('#addTestStatus').hide('normal', function() {
+		});
+	}
+	function addNewQuestionValue() {
+		var container = document.getElementById('questionList');
+		var forClone = document.getElementById('questionForClone');
+		var div2 = forClone.cloneNode(forClone);
+		questionCounter++;
+		div2.id = "question" + questionCounter;
+		div2.style.display = "block";
+		container.appendChild(div2);
+	}
 	window.onload = function() {
 		<c:if test="${not empty assignCategoryToTestDialog}">
 		$('#assignCategoryDialog').show('normal', function() {
@@ -71,6 +89,14 @@
 		$('#assignCommunityStatus').show('normal', function() {
 		});
 		</c:if>
+		<c:if test="${not empty addTestDialog}">
+		$('#addTestDialog').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty addNewTestStatus}">
+		$('#addTestStatus').show('normal', function() {
+		});
+		</c:if>
 	}
 </script>
 
@@ -78,8 +104,104 @@
 <body>
 	<c:import url="/WEB-INF/jsp/header.jspx" />
 	<div style="padding: 20px 20px">
+		<div>
+			<div id="addTestStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
 
-<div>
+				<c:set var="addTestStatusValue"
+					value="${addNewTestStatus == true ? 'tutor.test.addNewTestStatusOk': 'tutor.test.addNewTestStatusFail'}" />
+				<fmt:message key="${addTestStatusValue}" bundle="${rb}"
+					var="addTestStatusText" />
+				<h4>
+					${addTestStatusText} <a href="#" onclick="closeAddTestStatus()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+
+				<div class="clearheight"></div>
+			</div>
+		</div>
+		<div>
+			<div id="addTestDialog"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<fmt:message key="tutor.test.addNewTest" bundle="${rb}"
+					var="addNewTestText" />
+				<h4>
+					${addNewTestText} <a href="#" onclick="closeAddTestDialog()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+				<form id="dosubmit_addCategory" action="pages" method="post">
+					<input type="hidden" name="command" value="newTest" />
+					<div class="field-group">
+						<fmt:message key="tutor.test.testName" bundle="${rb}"
+							var="testNameText" />
+						<div class="field-group">
+							<label class="form-field-title" for="question_name">${testNameText}:</label>
+							<input type="text" name="testName" size="45" maxlength="45"
+								class="checkEmpty limitchars_refname_30 input"
+								id="question_name" />
+						</div>
+
+						<fmt:message key="tutor.test.question" bundle="${rb}"
+							var="questionText" />
+							<fmt:message key="tutor.test.selectQuestion" bundle="${rb}"
+							var="selectQuestionText" />
+						<div id="questionList">
+							<div id="question0" class="field-group">
+								<label class="form-field-title" for="s3">${questionText}:</label>
+								<select id="test_select" name="questionId[]"
+									class="cats_in_qb_filter">
+									<option value="-1">${selectQuestionText}</option>
+									<c:forEach var="elemQuestion" items="${questions}"
+										varStatus="status">
+										<option value="${elemQuestion.questionId}">${elemQuestion.questionName}</option>
+									</c:forEach>
+								</select> <br /> <br />
+							</div>
+						</div>
+					</div>
+					<div class="field-group">
+						<fmt:message key="tutor.test.addQuestion" bundle="${rb}"
+							var="addQuestionText" />
+						<div class="btn btn-create
+								tab"
+							onclick="addNewQuestionValue()">${addQuestionText}</div>
+					</div>
+
+					<div class="field-group">
+						<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+
+
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+
+					</div>
+				</form>
+				<div id="questionForClone" class="field-group"
+					style="display: none;">
+					<label class="form-field-title" for="s3">${questionText}:</label>
+					<div class="inlineBox" id="s3">
+						<select id="test_select" name="questionId[]"
+							class="cats_in_qb_filter">
+							<option value="-1">${selectQuestionText}</option>
+							<c:forEach var="elemQuestion" items="${questions}"
+								varStatus="status">
+								<option value="${elemQuestion.questionId}">${elemQuestion.questionName}</option>
+							</c:forEach>
+						</select> <br />
+					</div>
+				</div>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+
+
+
+
+		<div>
 			<div id="assignCommunityStatus"
 				class="hide top_hidden_box_div closeMeContainer"
 				style="display: none;">
@@ -148,7 +270,7 @@
 				style="display: none;">
 
 				<c:set var="assignCategoryStatusValue"
-					value="${assignCategoryStatus == true ? 'tutor.test.assignCategoryStatusOk': 'tutor.test.assignCategoryStatusFail'}" />
+					value="${assignTestToCategoryStatus == true ? 'tutor.test.assignCategoryStatusOk': 'tutor.test.assignCategoryStatusFail'}" />
 				<fmt:message key="${assignCategoryStatusValue}" bundle="${rb}"
 					var="assignCategoryStatusText" />
 				<h4>
@@ -203,24 +325,8 @@
 				<div class="clearheight"></div>
 			</div>
 		</div>
-
-		<ul class="cmtableTabs">
-
-			<c:forEach var="elem" items="${menu}" varStatus="status">
-				<c:set var="tabOnOf"
-					value="${elem.active == false ? 'taboff': 'tabon'}" />
-				<li class="${tabOnOf}">
-					<form id="myHiddenFormId" action="pages" method="post">
-						<input type="hidden" name="command" value="${elem.command}" />
-						<fmt:message key="${elem.menuText}" bundle="${rb}"
-							var="menuItemText" />
-						<input class="menuItemButton" type="submit"
-							value="${menuItemText} (${elem.itemsCount})" />
-					</form>
-				</li>
-			</c:forEach>
-
-		</ul>
+		<c:import url="/WEB-INF/jsp/menu.jspx" />
+		
 		<div class="table">
 			<div class="table-utility row">
 				<div class="col-span-1">
@@ -243,7 +349,8 @@
 				</div>
 				<div class="col-span-2 col-btns">
 					<form id="myHiddenFormId" action="pages" method="post">
-						<input type="hidden" name="command" value="newTest" />
+						<input type="hidden" name="command" value="newTestDialog" />
+
 						<fmt:message key="tutor.test.newTest" bundle="${rb}"
 							var="newTestText" />
 						<input class="btn btn-create" type="submit" value="${newTestText}" />
@@ -303,11 +410,9 @@
 									<div>
 										<form id="myHiddenFormId" action="pages" method="post">
 											<input type="hidden" name="command"
-												value="assignCategoryToTestDialog" />
-												<input type="hidden" name="testId"
-												value="${elem.testId}" />
-												<input type="hidden" name="testName"
-												value="${elem.testName}" />
+												value="assignCategoryToTestDialog" /> <input type="hidden"
+												name="testId" value="${elem.testId}" /> <input
+												type="hidden" name="testName" value="${elem.testName}" />
 											<fmt:message key="tutor.test.assign" bundle="${rb}"
 												var="assignText" />
 											<input class="simpleBtnLink red" type="submit"
@@ -346,11 +451,9 @@
 									<div>
 										<form id="myHiddenFormId" action="pages" method="post">
 											<input type="hidden" name="command"
-												value="assignCommunityToTestDialog" />
-												<input type="hidden" name="testId"
-												value="${elem.testId}" />
-												<input type="hidden" name="testName"
-												value="${elem.testName}" /> <input
+												value="assignCommunityToTestDialog" /> <input type="hidden"
+												name="testId" value="${elem.testId}" /> <input
+												type="hidden" name="testName" value="${elem.testName}" /> <input
 												class="simpleBtnLink red" type="submit"
 												value="${assignText}" />
 										</form>

@@ -163,4 +163,50 @@ public class Question implements Serializable {
 		return testQuestionsBank;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + questionActive;
+		result = prime * result + questionId;
+		result = prime * result + ((questionName == null) ? 0 : questionName.hashCode());
+		result = prime * result + ((questionText == null) ? 0 : questionText.hashCode());
+		result = prime * result + userId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Question other = (Question) obj;
+		if (questionActive != other.questionActive)
+			return false;
+		if (questionId != other.questionId)
+			return false;
+		if (questionName == null) {
+			if (other.questionName != null)
+				return false;
+		} else if (!questionName.equals(other.questionName))
+			return false;
+		if (questionText == null) {
+			if (other.questionText != null)
+				return false;
+		} else if (!questionText.equals(other.questionText))
+			return false;
+		if (userId != other.userId)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "Question [questionId=" + questionId + ", questionActive=" + questionActive + ", questionText="
+				+ questionText + ", questionName=" + questionName + ", userId=" + userId + "]";
+	}
+
 }

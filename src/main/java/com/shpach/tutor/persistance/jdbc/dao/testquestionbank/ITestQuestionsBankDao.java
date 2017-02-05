@@ -10,4 +10,5 @@ public interface ITestQuestionsBankDao {
 	public TestQuestionsBank findTestQuestionsBankById(int id);
 	public List<TestQuestionsBank> findTestQuestionsBankByTestId(int id);
 	public List<TestQuestionsBank> findTestQuestionsBankByQuestionId(int id);
+	public int findMaxquestionDefaultSortingOrderByTestId(int testId);
 }

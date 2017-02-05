@@ -105,6 +105,43 @@ public class Community implements Serializable {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + communityActive;
+		result = prime * result + ((communityDescription == null) ? 0 : communityDescription.hashCode());
+		result = prime * result + communityId;
+		result = prime * result + ((communityName == null) ? 0 : communityName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Community other = (Community) obj;
+		if (communityActive != other.communityActive)
+			return false;
+		if (communityDescription == null) {
+			if (other.communityDescription != null)
+				return false;
+		} else if (!communityDescription.equals(other.communityDescription))
+			return false;
+		if (communityId != other.communityId)
+			return false;
+		if (communityName == null) {
+			if (other.communityName != null)
+				return false;
+		} else if (!communityName.equals(other.communityName))
+			return false;
+		return true;
+	}
+
+	@Override
 	public String toString() {
 		return "Community [communityId=" + communityId + ", communityActive=" + communityActive
 				+ ", communityDescription=" + communityDescription + ", communityName=" + communityName + "]";

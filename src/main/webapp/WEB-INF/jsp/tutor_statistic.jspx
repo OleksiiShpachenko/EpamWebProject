@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Document   : main
+    Created on : 21.02.2013, 21:05:23
+    Author     : Artem
+-->
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:statistic="urn:jsptld:/WEB-INF/tlds/statisticstags.tld"
+	version="2.0">
+
+	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
+
+	<link href="styles/main.css" rel="stylesheet" type="text/css" />
+	<fmt:setBundle basename="pagecontent" var="rb" />
+	<html>
+<head>
+<title>Hello !</title>
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
+<script type="text/javascript">
+	function expandAll() {
+
+		<c:forEach var="elem" items="${communities}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+		$('#ANIMATION1DIV_${status.count}').show('normal', function() {
+		});
+		</c:forEach>
+
+	}
+	function colapseAll() {
+
+		<c:forEach var="elem" items="${communities}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+		$('#ANIMATION1DIV_${status.count}').hide('normal', function() {
+		});
+		</c:forEach>
+
+	}
+	function showAddCommunityDialog() {
+		closeAddCommunityStatus();
+		closeAssignTestStatus();
+		$('#addCommunityDialog').show('normal', function() {
+		});
+	}
+	function closeAddCommunityDialog() {
+		$('#addCommunityDialog').hide('normal', function() {
+		});
+	}
+	function closeAddCommunityStatus() {
+		$('#addCommunityStatus').hide('normal', function() {
+		});
+	}
+	function closeAssignUserStatus() {
+		$('#assignUserStatus').hide('normal', function() {
+		});
+	}
+	function closeAssignUserDialog() {
+		$('#assignUserDialog').hide('normal', function() {
+		});
+	}
+	function openAssignUserToCommunityDialog(id) {
+		closeAssignUserStatus();
+		closeAssignTestStatus();
+		document.getElementById('assignUserCommIdParam').value = id;
+		$('#assignUserDialog').show('normal', function() {
+		});
+	}
+	function closeAssignTestDialog() {
+		$('#assignTestDialog').hide('normal', function() {
+		});
+	}
+	function closeAssignTestStatus() {
+		$('#assignTestStatus').hide('normal', function() {
+		});
+	}
+
+	window.onload = function() {
+		<c:if test="${not empty addCommunityStatus}">
+		$('#addCommunityStatus').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty assignUserStatus}">
+		$('#assignUserStatus').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty assignTestToCommunityDialog}">
+		$('#assignTestDialog').show('normal', function() {
+		});
+		</c:if>
+		<c:if test="${not empty assignTestToCommunityStatus}">
+		$('#assignTestStatus').show('normal', function() {
+		});
+		</c:if>
+	}
+</script>
+
+</head>
+<body>
+	<c:import url="/WEB-INF/jsp/header.jspx" />
+	<div style="padding: 20px 20px">
+
+		<div>
+			<div id="assignTestStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+
+				<c:set var="assignTestStatusValue"
+					value="${assignTestToCommunityStatus == true ? 'tutor.community.assignTestStatusOk': 'tutor.community.assignTestStatusFail'}" />
+				<fmt:message key="${assignTestStatusValue}" bundle="${rb}"
+					var="assignTestStatusText" />
+				<h4>
+					${assignTestStatusText} <a href="#"
+						onclick="closeAssignTestStatus()" class="closeMeLink right close">&#160;</a>
+				</h4>
+
+				<div class="clearheight"></div>
+			</div>
+		</div>
+		<div>
+			<div id="assignTestDialog"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<fmt:message key="tutor.community.assignNewTest" bundle="${rb}"
+					var="assignTestText" />
+				<h4>
+					${assignTestText}&#160;"${communityName}" <a href="#"
+						onclick="closeAssignTestDialog()" class="closeMeLink right close">&#160;</a>
+				</h4>
+				<form id="dosubmit_addCategory" action="pages" method="post">
+					<input type="hidden" name="command" value="assignTestToCommunity" />
+					<input id="assignTestCommIdParam" type="hidden" name="communityId"
+						value="${communityId}" />
+					<div class="field-group">
+
+						<select id="test_select" name="testId" class="cats_in_qb_filter">
+							<option value="-1">Select test</option>
+							<c:forEach var="elemTest" items="${tests}" varStatus="status">
+								<option value="${elemTest.testId}">${elemTest.testName}</option>
+							</c:forEach>
+						</select>
+
+						<fmt:message key="tutor.community.assignTest" bundle="${rb}"
+							var="assignTestText" />
+						<label class="form-field-title" for="category_name">${assignTestText}:</label>
+					</div>
+					<div class="field-group">
+						<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+
+
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+
+					</div>
+				</form>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+
+
+		<div>
+			<div id="assignUserStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+
+				<c:set var="assignUserStatusValue"
+					value="${assignUserStatus == true ? 'tutor.community.assignUserStatusOk': 'tutor.community.assignUserStatusFail'}" />
+				<fmt:message key="${assignUserStatusValue}" bundle="${rb}"
+					var="assignUserStatusText" />
+				<h4>
+					${assignUserStatusText} <a href="#"
+						onclick="closeAssignUserStatus()" class="closeMeLink right close">&#160;</a>
+				</h4>
+
+				<div class="clearheight"></div>
+			</div>
+		</div>
+		<div>
+			<div id="assignUserDialog"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<fmt:message key="tutor.community.assignNewUser" bundle="${rb}"
+					var="assignUserText" />
+				<h4>
+					${assignUserText} <a href="#" onclick="closeAssignUserDialog()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+				<form id="dosubmit_addCategory" action="pages" method="post">
+					<input type="hidden" name="command" value="assignUserToCommunity" />
+					<input id="assignUserCommIdParam" type="hidden" name="communityId"
+						value="" />
+					<div class="field-group">
+						<fmt:message key="tutor.community.userName" bundle="${rb}"
+							var="userNameText" />
+						<label class="form-field-title" for="category_name">${userNameText}:</label>
+						<input type="email" name="userName" size="60"
+							class="checkEmpty limitchars_refname_30 input" id="category_name" />
+						<fmt:message key="tutor.community.assignUserTip" bundle="${rb}"
+							var="assignUserTipText" />
+						<span class="showTooltip tooltip" title="${assignUserTipText}">Tip</span>
+
+					</div>
+					<div class="field-group">
+						<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+
+
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+
+					</div>
+				</form>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+
+
+		<div>
+			<div id="addCommunityStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+
+				<c:set var="addCommunityStatusValue"
+					value="${addCommunityStatus == true ? 'tutor.community.addNewCommunityStatusOk': 'tutor.community.addNewCommunityStatusFail'}" />
+				<fmt:message key="${addCommunityStatusValue}" bundle="${rb}"
+					var="addNewCommunityStatusText" />
+				<h4>
+					${addNewCommunityStatusText} <a href="#"
+						onclick="closeAddCommunityStatus()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+
+		<div>
+			<div id="addCommunityDialog"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<fmt:message key="tutor.community.addNewCommunity" bundle="${rb}"
+					var="addNewCommunityText" />
+				<h4>
+					${addNewCommunityText} <a href="#"
+						onclick="closeAddCommunityDialog()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+				<form id="dosubmit_addCategory" action="pages" method="post">
+					<input type="hidden" name="command" value="newCommunity" />
+					<div class="field-group">
+						<fmt:message key="tutor.community.communityName" bundle="${rb}"
+							var="communityNameText" />
+						<label class="form-field-title" for="category_name">${communityNameText}:</label>
+						<input type="text" name="comm_name" size="30" maxlength="30"
+							class="checkEmpty limitchars_refname_30 input" id="category_name" />
+						<fmt:message key="tutor.community.addCommunityTip" bundle="${rb}"
+							var="addCommunityTipText" />
+						<span class="showTooltip tooltip" title="${addCommunityTipText}">Tip</span>
+						<fmt:message key="tutor.categories.maximumCharacters"
+							bundle="${rb}" var="maximumCharactersText" />
+						<span class="refname_info">${maximumCharactersText}</span>
+					</div>
+					<div class="field-group">
+						<fmt:message key="tutor.categories.submit" bundle="${rb}"
+							var="submitText" />
+
+
+						<input class="btn btn-create tab" type="submit"
+							value="${submitText}" />
+
+					</div>
+				</form>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+
+
+		<c:import url="/WEB-INF/jsp/menu.jspx" />
+
+		<div class="table">
+			<div class="table-utility row">
+				<div class="col-span-1">
+					<div class="dropdown dropdown-x hide_if_no_data">
+						<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+						<ul class="dropdown-menu">
+							<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+									All</a></li>
+							<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+									All</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="col-span-7">
+					<span id="cat_filter" class="search_filter hide_if_no_data"></span>
+					<span class="hide_if_no_data  not-ie67"> <input type="text"
+						id="test_search" placeholder="Search Test Name"
+						class="hide_if_no_data" /> <span class="only-ie little">Search
+							Test Name</span></span>
+				</div>
+
+			</div>
+
+			<!-- TESTS LIST: START -->
+			<ul class="table-body">
+
+				<c:forEach var="elem" items="${communities}" varStatus="status">
+
+					<li>
+						<div id="ANIMATIONBUTTON_${status.count}"
+							class="row accordion-toggle scrollTop test_container closed">
+							<div class="col-span-6">
+								<h4 class="test-name name">${elem.communityName}</h4>
+							</div>
+							<div class="col-span-4 col-btns">
+								<div class="inlineBox">
+									<div>
+										<form id="myHiddenFormId" action="pages" method="post">
+											<input type="hidden" name="command" value="editTest" /> <input
+												type="hidden" name="communityId" value="${elem.communityId}" />
+											<fmt:message key="tutor.test.edit" bundle="${rb}"
+												var="editText" />
+											<input class="simpleBtnLink" type="submit"
+												value="${editText}" />
+										</form>
+									</div>
+									<div>
+										<form id="myHiddenFormId" action="pages" method="post">
+											<input type="hidden" name="command" value="statistics" />
+											<fmt:message key="tutor.test.statistics" bundle="${rb}"
+												var="statisticsText" />
+											<input class="simpleBtnLink" type="submit"
+												value="${statisticsText}" />
+										</form>
+									</div>
+								</div>
+							</div>
+							<span class="caret">&#160;</span>
+						</div>
+						<div id="ANIMATION1DIV_${status.count}"
+							class="accordion-fold subrow-container test_groups hide"
+							style="display: none;">
+							<!-- hidden for now -->
+							<ul class="groups_links_list hover-row">
+							<li class="row">
+							<div >
+								<div>
+
+								<table class="simple-little-table" cellspacing='0'>
+									<tbody>
+										<tr>
+											<th><jsp:text /></th>
+
+											<c:forEach var="test" items="${elem.tests}"
+												varStatus="statusAnswers">
+												<th>${test.testName}</th>
+											</c:forEach>
+											<td></td>
+										</tr>
+										<c:forEach var="user" items="${elem.users}" varStatus="statusTest">
+											<tr>
+												<th>${user.userName},&#160;${user.userEmail}</th>
+												<c:forEach var="test" items="${elem.tests}"
+													varStatus="statusCommunity">
+													<td><statistic:tutorUserToTestStatistic
+											testId="${test.testId}" userId="${user.userId}"  community="${elem}" /></td>
+												</c:forEach>
+											<td><statistic:tutorUserToCommunityStatisticAverage
+											 userId="${user.userId}"  community="${elem}" /></td>
+											</tr>
+										</c:forEach>
+										
+
+									</tbody>
+								</table>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+							</div>
+							</li>
+							</ul>
+							</div>
+							<script>
+								$('#ANIMATIONBUTTON_${status.count}')
+										.click(
+												function() {
+													var className = document
+															.getElementById('ANIMATIONBUTTON_${status.count}').className;
+													if (className == 'row accordion-toggle scrollTop test_container closed') {
+														document
+																.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+													} else {
+														document
+																.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+
+													}
+
+													$(
+															'#ANIMATION1DIV_${status.count}')
+															.toggle('normal',
+																	function() {
+																	});
+												});
+							</script>
+					</li>
+
+
+
+
+
+				</c:forEach>
+
+			</ul>
+
+
+			<div class="table-utility row bellow">
+				<div class="col-span-8">
+					<div class="dropdown dropdown-x hide_if_no_data_bottom">
+						<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+						<ul class="dropdown-menu">
+							<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+									All</a></li>
+							<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+									All</a></li>
+						</ul>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+	</html>
+
+</jsp:root>

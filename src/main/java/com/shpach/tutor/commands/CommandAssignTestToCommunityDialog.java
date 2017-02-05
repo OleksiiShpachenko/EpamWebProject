@@ -8,46 +8,55 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
+
 import com.shpach.tutor.manager.Config;
 import com.shpach.tutor.persistance.entities.Test;
 import com.shpach.tutor.persistance.entities.User;
-import com.shpach.tutor.servise.SessionServise;
-import com.shpach.tutor.servise.TestService;
-import com.shpach.tutor.servise.UserService;
+import com.shpach.tutor.service.SessionServise;
+import com.shpach.tutor.service.TestService;
+import com.shpach.tutor.service.UserService;
 
+/**
+ * Command which sets request attributes to enable to show "assign test to
+ * community dialog"
+ * 
+ * @author Shpachenko_A_K
+ *
+ */
 public class CommandAssignTestToCommunityDialog implements ICommand {
-		@Override
-		public String execute(HttpServletRequest request, HttpServletResponse responce)
-				throws ServletException, IOException {
-			String page = null;
-			boolean checkSession = false;
+	private static final Logger logger = Logger.getLogger(CommandAssignTestToCommunityDialog.class);
 
-			HttpSession session = request.getSession(false);
+	@Override
+	public String execute(HttpServletRequest request, HttpServletResponse responce)
+			throws ServletException, IOException {
+		String page = null;
+		boolean checkSession = false;
 
-			if (session == null)
-				return page = Config.getInstance().getProperty(Config.LOGIN);
-			checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
-			if (!checkSession) {
-				session.invalidate();
-				return page = Config.getInstance().getProperty(Config.LOGIN);
-			}
-			User user = UserService.getUserByLogin((String) session.getAttribute("user"));
-		    
-			//String communityId=request.getParameter("communityId");
-			//String userName=request.getParameter("userName");
-			
-			List<Test> tests = TestService.getTestsByUsers(user);
-			TestService.insertCommunitiesToTests(tests);
-			TestService.insertCategoriesToTests(tests);
-			request.setAttribute("tests", tests); 
-			//boolean isOk=CommunityService.assignUserToCommunity(userName, communityId);
-			//request.setAttribute("assignUserStatus", isOk);
-			request.setAttribute("assignTestToCommunityDialog", true);
-			request.setAttribute("communityId", request.getParameter("communityId"));
-			request.setAttribute("communityName", request.getParameter("communityName"));
-		
-			page ="/pages"; 
-			return page;
+		HttpSession session = request.getSession(false);
+
+		if (session == null) {
+			logger.warn("try to access without session");
+			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
+		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		if (!checkSession) {
+			session.invalidate();
+			logger.warn("invalid session");
+			return page = Config.getInstance().getProperty(Config.LOGIN);
+		}
+		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+
+		List<Test> tests = TestService.getTestsByUsers(user);
+		TestService.insertCommunitiesToTests(tests);
+		TestService.insertCategoriesToTests(tests);
+		request.setAttribute("tests", tests);
+		request.setAttribute("assignTestToCommunityDialog", true);
+		request.setAttribute("communityId", request.getParameter("communityId"));
+		request.setAttribute("communityName", request.getParameter("communityName"));
+
+		page = "/pages";
+		return page;
+	}
 
 }

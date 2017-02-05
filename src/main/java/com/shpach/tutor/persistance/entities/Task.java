@@ -2,6 +2,8 @@ package com.shpach.tutor.persistance.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -40,6 +42,7 @@ public class Task implements Serializable {
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
+	private int userId;
 	private User user;
 
 	//bi-directional many-to-one association to Test
@@ -99,6 +102,8 @@ public class Task implements Serializable {
 	}
 
 	public QuestionLog addQuestionLog(QuestionLog questionLog) {
+		if (getQuestionLogs()==null)
+			questionLogs = new ArrayList<>();
 		getQuestionLogs().add(questionLog);
 		questionLog.setTask(this);
 
@@ -110,6 +115,14 @@ public class Task implements Serializable {
 		questionLog.setTask(null);
 
 		return questionLog;
+	}
+
+	public int getUserId() {
+		return userId;
+	}
+
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 
 	public User getUser() {

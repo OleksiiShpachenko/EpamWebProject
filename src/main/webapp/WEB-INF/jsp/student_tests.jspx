@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Document   : main
+    Created on : 21.02.2013, 21:05:23
+    Author     : Artem
+-->
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions" version="2.0">
+
+	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
+
+	<link href="styles/main.css" rel="stylesheet" type="text/css" />
+	<fmt:setBundle basename="pagecontent" var="rb" />
+	<html>
+<head>
+<title>Tutor</title>
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
+<script type="text/javascript">
+	questionCounter = 0;
+	function expandAll() {
+
+		<c:forEach var="elem" items="${tests}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+		$('#ANIMATION1DIV_${status.count}').show('normal', function() {
+		});
+		</c:forEach>
+
+	}
+
+	function colapseAll() {
+
+		<c:forEach var="elem" items="${tests}" varStatus="status">
+		document.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+		$('#ANIMATION1DIV_${status.count}').hide('normal', function() {
+		});
+		</c:forEach>
+
+	}
+
+	function closeTakeTestStatus() {
+		$('#takeTestStatus').hide('normal', function() {
+		});
+	}
+
+	window.onload = function() {
+		<c:if test="${not empty takeTestFinishStatus}">
+		$('#takeTestStatus').show('normal', function() {
+		});
+		</c:if>
+	}
+</script>
+
+</head>
+<body>
+	<c:import url="/WEB-INF/jsp/header.jspx" />
+	<div style="padding: 20px 20px">
+		<div>
+			<div id="takeTestStatus"
+				class="hide top_hidden_box_div closeMeContainer"
+				style="display: none;">
+				<h4>
+					<c:choose>
+						<c:when test="${takeTestFinishStatus==true}">
+   Test passed with score ${taskScore}%
+</c:when>
+						<!-- if condition -->
+
+						<c:otherwise>Something wrong with saving test</c:otherwise>
+						<!-- else condition -->
+
+					</c:choose>
+					<a href="#" onclick="closeTakeTestStatus()"
+						class="closeMeLink right close">&#160;</a>
+				</h4>
+				<div class="clearheight"></div>
+			</div>
+		</div>
+
+		<div>
+
+
+			<c:import url="/WEB-INF/jsp/menu.jspx" />
+
+			<div class="table">
+				<div class="table-utility row">
+					<div class="col-span-1">
+						<div class="dropdown dropdown-x hide_if_no_data">
+							<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+							<ul class="dropdown-menu">
+								<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+										All</a></li>
+								<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+										All</a></li>
+							</ul>
+						</div>
+					</div>
+					<div class="col-span-7">
+						<span id="cat_filter" class="search_filter hide_if_no_data"></span>
+						<span class="hide_if_no_data  not-ie67"> <input type="text"
+							id="test_search" placeholder="Search Test Name"
+							class="hide_if_no_data" /> <span class="only-ie little">Search
+								Test Name</span></span>
+					</div>
+
+				</div>
+
+				<!-- TESTS LIST: START -->
+				<ul class="table-body">
+
+					<c:forEach var="elem" items="${tests}" varStatus="status">
+
+						<li>
+							<div id="ANIMATIONBUTTON_${status.count}"
+								class="row accordion-toggle scrollTop test_container closed">
+								<div class="col-span-6">
+									<h4 class="test-name name">${elem.testName}</h4>
+								</div>
+								<div class="col-span-4 col-btns">
+									<div class="inlineBox">
+										<div>
+											<form id="myHiddenFormId" action="pages" method="post">
+												<input type="hidden" name="command" value="takeTestStart" />
+												<input type="hidden" name="testId" value="${elem.testId}" />
+												<fmt:message key="student.test.takeTest" bundle="${rb}"
+													var="takeTestText" />
+												<input class="simpleBtnLink" type="submit"
+													value="${takeTestText}" />
+											</form>
+										</div>
+										<div>
+											<form id="myHiddenFormId" action="pages" method="post">
+												<input type="hidden" name="command" value="statistics" />
+												<fmt:message key="tutor.test.statistics" bundle="${rb}"
+													var="statisticsText" />
+												<input class="simpleBtnLink" type="submit"
+													value="${statisticsText}" />
+											</form>
+										</div>
+									</div>
+								</div>
+								<span class="caret">&#160;</span>
+							</div>
+							<div id="ANIMATION1DIV_${status.count}"
+								class="accordion-fold subrow-container test_groups hide"
+								style="display: none;">
+								<!-- hidden for now -->
+								<div class="row hint ">
+									<div class="col-span-6 ">
+										<fmt:message key="tutor.test.assignedTo" bundle="${rb}"
+											var="assignedToText" />
+										<fmt:message key="tutor.test.categories" bundle="${rb}"
+											var="categoriesText" />
+										<div>${assignedToText}&#160;${categoriesText}:&#160;(${fn:length(elem.categories)})</div>
+									</div>
+									<div class="col-span-10 col-btns">
+										<div>
+											<form id="myHiddenFormId" action="pages" method="post">
+												<input type="hidden" name="command"
+													value="assignCategoryToTestDialog" /> <input type="hidden"
+													name="testId" value="${elem.testId}" /> <input
+													type="hidden" name="testName" value="${elem.testName}" />
+												<fmt:message key="tutor.test.assign" bundle="${rb}"
+													var="assignText" />
+												<input class="simpleBtnLink red" type="submit"
+													value="${assignText}" />
+											</form>
+										</div>
+									</div>
+								</div>
+								<ul class="groups_links_list hover-row">
+									<c:forEach var="category" items="${elem.categories}"
+										varStatus="statusCategories">
+
+
+										<li class="row">
+											<div class="col-span-6">
+
+												<form class="group-name name" id="myHiddenFormId"
+													action="pages" method="post">
+													<input type="hidden" name="command" value="value" /> <input
+														class="menuItemButton" type="submit"
+														value="${category.categoryName}" />
+												</form>
+
+											</div>
+										</li>
+									</c:forEach>
+
+								</ul>
+								<div class="row hint ">
+									<div class="col-span-6 ">
+										<fmt:message key="tutor.test.communities" bundle="${rb}"
+											var="communitiesText" />
+										<div>${assignedToText}&#160;${communitiesText}:&#160;(${fn:length(elem.communities)})</div>
+									</div>
+									<div class="col-span-10 col-btns">
+										<div>
+											<form id="myHiddenFormId" action="pages" method="post">
+												<input type="hidden" name="command"
+													value="assignCommunityToTestDialog" /> <input
+													type="hidden" name="testId" value="${elem.testId}" /> <input
+													type="hidden" name="testName" value="${elem.testName}" />
+												<input class="simpleBtnLink red" type="submit"
+													value="${assignText}" />
+											</form>
+										</div>
+									</div>
+								</div>
+								<ul class="groups_links_list hover-row">
+									<c:forEach var="group" items="${elem.communities}"
+										varStatus="statusGroup">
+
+
+
+										<li class="row">
+											<div class="col-span-6">
+
+												<form class="group-name name" id="myHiddenFormId"
+													action="pages" method="post">
+													<input type="hidden" name="command" value="value" /> <input
+														class="menuItemButton" type="submit"
+														value="${group.communityName}" />
+												</form>
+
+											</div>
+											<div class="col-span-4 col-btns">
+												<div class="inlineBox">
+													<div>
+														<form id="myHiddenFormId" action="pages" method="post">
+															<input type="hidden" name="command" value="value" /> <input
+																class="simpleBtnLink" type="submit"
+																value="${statisticsText}" />
+														</form>
+													</div>
+												</div>
+											</div>
+										</li>
+
+									</c:forEach>
+
+
+								</ul>
+							</div> <script>
+								$('#ANIMATIONBUTTON_${status.count}')
+										.click(
+												function() {
+													var className = document
+															.getElementById('ANIMATIONBUTTON_${status.count}').className;
+													if (className == 'row accordion-toggle scrollTop test_container closed') {
+														document
+																.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container open';
+													} else {
+														document
+																.getElementById('ANIMATIONBUTTON_${status.count}').className = 'row accordion-toggle scrollTop test_container closed';
+
+													}
+
+													$(
+															'#ANIMATION1DIV_${status.count}')
+															.toggle('normal',
+																	function() {
+																	});
+												});
+							</script>
+
+						</li>
+
+
+
+
+
+					</c:forEach>
+
+				</ul>
+
+
+				<div class="table-utility row bellow">
+					<div class="col-span-8">
+						<div class="dropdown dropdown-x hide_if_no_data_bottom">
+							<a class="dropdown-toggle no_anchor" href="#"> Options </a>
+							<ul class="dropdown-menu">
+								<li><a href="#" onclick="expandAll()" class="expandAll">Expand
+										All</a></li>
+								<li><a href="#" onclick="colapseAll()" class="collapseAll">Collapse
+										All</a></li>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+	</html>
+
+</jsp:root>

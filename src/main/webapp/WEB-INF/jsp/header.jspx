@@ -5,39 +5,74 @@
     Author     : Shpachenko Oleksii
 -->
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" 
-	xmlns:fmt= "http://java.sun.com/jsp/jstl/fmt" version="2.0">
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:greetTag="urn:jsptld:/WEB-INF/tlds/usergreetingstag.tld" version="2.0">
 
 	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
-
-<fmt:setBundle basename="pagecontent" var="rb" />
-	<html>
+ 	
+	<fmt:setBundle basename="pagecontent" var="rb" />
+<html>
 <head>
-<title>Tutor Menu</title>
+<title>Tutor</title>
+ <!--<jsp:directive.tagLib prefix="greetingstag" uri="/WEB-INF/tlds/usergreetingstag.tld" /> -->
+  
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
 <link href="styles/mainStyle.css" rel="stylesheet" type="text/css" />
+
+
+
 </head>
 <body>
-<div id="header_wrapper">
-<table width="100%" >
-<tr>
-  <td><img src="images/logo.png"/></td>
-  <td><img src="images/people_head.jpg"/></td>
-  <td width="32"><form id="myHiddenFormId" action="pages" method="post" >
-      <input type="hidden" name="command" value="locale"/>
-      <input type="hidden" name="localeValue" value="ua_UA"/>
-      <input class="lang_button1" type="submit" value="" style="background-image:url(images/Ukraine.png);" />
-    </form></td>
-  <td width="32"><form id="myHiddenFormId" action="pages" method="post" >
-      <input type="hidden" name="command" value="locale"/>
-      <input type="hidden" name="localeValue" value="en_US"/>
-      <input class="lang_button1" type="submit" value="" style="background-image:url(images/United-Kingdom.png);" />
-    </form></td>
-</tr>
-<tr>
-<td class="line" colspan="4"/>
-</tr>
-</table>
-</div>
+	<div id="header_wrapper">
+		<table width="100%">
+			<tr>
+				<td><img src="images/logo.png" /></td>
+				<td><img src="images/people_head.jpg" colspan="3" /></td>
+
+			</tr>
+			<tr class="line">
+				<td></td>
+				<td>
+				<greetTag:greetings />
+					<div id="userInfo" style="display: none;">
+						<fmt:message key="header.greetings" bundle="${rb}"
+							var="greetingsText" />
+						<fmt:message key="header.status" bundle="${rb}" var="statusText" />
+						<fmt:message key="header.logOut" bundle="${rb}" var="logOutText" />
+
+						<ul class="upgrade-logout-nav">
+							<li><a href="#">${greetingsText}&#160; ${userEntity.userName}</a></li>
+							<li><a href="#">${statusText}:&#160;${usersRole.roleName}</a></li>
+							<li><form action="pages" method="post">
+									<input type="hidden" name="command" value="logOut" /> <input
+										class="simpleBtnLink logOut" type="submit"
+										value="${logOutText}" />
+								</form></li>
+						</ul>
+					</div>
+				</td>
+				<td width="32"><form id="myHiddenFormId" action="pages"
+						method="post">
+						<input type="hidden" name="command" value="locale" /> <input
+							type="hidden" name="localeValue" value="ua_UA" /> <input
+							class="lang_button1" type="submit" value=""
+							style="background-image: url(images/Ukraine.png);" />
+					</form></td>
+				<td width="32"><form id="myHiddenFormId" action="pages"
+						method="post">
+						<input type="hidden" name="command" value="locale" /> <input
+							type="hidden" name="localeValue" value="en_US" /> <input
+							class="lang_button1" type="submit" value=""
+							style="background-image: url(images/United-Kingdom.png);" />
+					</form></td>
+
+			</tr>
+		</table>
+	</div>
 </body>
 	</html>
 

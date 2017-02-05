@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.shpach.tutor.commands;
 
 
@@ -12,9 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.shpach.tutor.manager.Config;
 
-/**
+
+/**Command which used for unknown commands
+ * @author Shpachenko_A_K
  *
- * @author MAXIM
  */
 public class CommandMissing implements ICommand {
 

@@ -7,7 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-<form action="pages" id="some_id" name="loginFormAutoSubmit" method=POST>
+<form  action="pages" id="some_id" name="loginFormAutoSubmit" method=POST style="display: none;">
     <input type="hidden" name="command" value="login" /> 
 		<input type="hidden" name="login" value="" />
 		<input type="hidden" name="password" value="" /> 

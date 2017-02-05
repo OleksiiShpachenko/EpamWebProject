@@ -8,6 +8,10 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
+/**Wrap request with new parameters
+ * @author Shpachenko_A_K
+ *
+ */
 public class RequestWrapper extends HttpServletRequestWrapper {
 	private final Map<String, String[]> modifiableParameters;
 	private Map<String, String[]> allParameters = null;

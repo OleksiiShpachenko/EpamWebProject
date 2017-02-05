@@ -18,6 +18,7 @@ public class Message {
     public static final String SERVLET_EXECPTION = "SERVLET_EXCEPTION";
     public static final String IO_EXCEPTION = "IO_EXCEPTION";
     public static final String LOGIN_ERROR = "LOGIN_ERROR";
+	
 
     public static Message getInstance() {
         if (instance == null) {

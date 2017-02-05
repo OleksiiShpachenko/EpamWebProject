@@ -2,17 +2,30 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://java.sun.com/xml/ns/javaee"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	id="WebApp_ID"  version="3.0">
+	id="WebApp_ID" version="3.0">
 	<display-name>Archetype Created Web Application</display-name>
+	<filter>
+		<filter-name>encodingfilter</filter-name>
+		<filter-class>com.shpach.tutor.view.filters.EncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
 	<filter>
 		<display-name>StaticContentFilter</display-name>
 		<filter-name>StaticContentFilter</filter-name>
 		<filter-class>com.shpach.tutor.view.filters.StaticContentFilter</filter-class>
 	</filter>
 	<filter-mapping>
+		<filter-name>encodingfilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
 		<filter-name>StaticContentFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+
 	<servlet>
 		<display-name>Controller</display-name>
 		<servlet-name>Controller</servlet-name>
@@ -23,6 +36,13 @@
 		<url-pattern>/pages</url-pattern>
 	</servlet-mapping>
 	<session-config>
-		<session-timeout>1</session-timeout>
+		<session-timeout>10</session-timeout>
 	</session-config>
+	<description>MySQL</description>
+	<resource-ref>
+		<description>MySQL DB Connection Pool</description>
+		<res-ref-name>jdbc/tutorDB</res-ref-name>
+		<res-type>javax.sql.DataSource</res-type>
+		<res-auth>Container</res-auth>
+	</resource-ref>
 </web-app>

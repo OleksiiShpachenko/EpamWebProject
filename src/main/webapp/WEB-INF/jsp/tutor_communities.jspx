@@ -283,23 +283,7 @@ function colapseAll() {
 
 
 
-		<ul class="cmtableTabs">
-
-			<c:forEach var="elem" items="${menu}" varStatus="status">
-				<c:set var="tabOnOf"
-					value="${elem.active == false ? 'taboff': 'tabon'}" />
-				<li class="${tabOnOf}">
-					<form id="myHiddenFormId" action="pages" method="post">
-						<input type="hidden" name="command" value="${elem.command}" />
-						<fmt:message key="${elem.menuText}" bundle="${rb}"
-							var="menuItemText" />
-						<input class="menuItemButton" type="submit"
-							value="${menuItemText} (${elem.itemsCount})" />
-					</form>
-				</li>
-			</c:forEach>
-
-		</ul>
+		<c:import url="/WEB-INF/jsp/menu.jspx" />
 		<div class="table">
 			<div class="table-utility row">
 				<div class="col-span-1">

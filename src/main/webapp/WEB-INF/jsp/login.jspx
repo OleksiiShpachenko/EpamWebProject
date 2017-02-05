@@ -5,42 +5,93 @@
     Author     : Artem
 -->
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
-	xmlns:c="http://java.sun.com/jsp/jstl/core" 
-	xmlns:fmt= "http://java.sun.com/jsp/jstl/fmt" version="2.0" >
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" version="2.0">
 
 	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
-<!--<fmt:setLocale value="en_US" scope="session" />-->
-<fmt:setBundle basename="pagecontent" var="rb" />
+	<!--<fmt:setLocale value="en_US" scope="session" />-->
+	<fmt:setBundle basename="pagecontent" var="rb" />
 	<html>
 <head>
-<link rel="stylesheet" href="styles/loginStyle.css" media="screen" type="text/css" />
+<link rel="stylesheet" href="styles/loginStyle.css" media="screen"
+	type="text/css" />
 <title>Hello !</title>
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
+
 </head>
 <body>
-<c:import url="/WEB-INF/jsp/header.jspx" />
+	<c:import url="/WEB-INF/jsp/header.jspx" />
+<fmt:message key="login.registrationSuccess" bundle="${rb}"
+			var="registrationSuccessText" />
+	
+	<div id="regSuccess" style="display: none;">
+		<h2>${registrationSuccessText}</h2>
+	</div>
+<script type="text/javascript">
+<c:if test="${not empty registrationSuccess}">
+var div = document.getElementById('regSuccess');
+div.style.display = "block";
+</c:if> 
+		
+	
+	
+	
+</script>
+	<div id="login">
+		<fmt:message key="login.autorization" bundle="${rb}"
+			var="autorizationText" />
+		<h2>
+			<span class="fontawesome-lock"></span>${autorizationText}
 
-<div id="login">
-		<fmt:message key="login.autorization" bundle="${rb}" var="autorizationText"/>
-		<h2><span class="fontawesome-lock"></span>${autorizationText}</h2>
+		</h2>
 		<form action="pages" method="POST">
-		<input type="hidden" name="command" value="login" />
-		<fmt:message key="login.login" bundle="${rb}" var="loginText"/>
-		<fmt:message key="login.password" bundle="${rb}" var="passwordText"/>
+			<input type="hidden" name="command" value="login" />
+			<fmt:message key="login.login" bundle="${rb}" var="loginText" />
+			<fmt:message key="login.password" bundle="${rb}" var="passwordText" />
 			<fieldset>
-				<p><label for="email">${loginText}:</label></p>
-				<p><input type="email" id="email" name="login" value="${loginText}" onBlur="if(this.value=='')this.value='логин'" onFocus="if(this.value=='Логин')this.value=''"/></p>
+				<p>
+					<label for="email">${loginText}:</label>
+				</p>
+				<p>
+					<input type="email" id="email" name="login" value="${loginText}"
+						onBlur="if(this.value=='')this.value='логин'"
+						onFocus="if(this.value=='Логин')this.value=''" />
+				</p>
 
-				<p><label for="password"> ${passwordText}:</label></p>
-				<p><input type="password" id="password" name="password" value="${passwordText}" onBlur="if(this.value=='')this.value='Пароль'" onFocus="if(this.value=='Пароль')this.value=''"/></p> 
-				<p><label >${errorLoginPassMessage} ${wrongAction} ${nullPage} </label></p>
-				<fmt:message key="login.enter" bundle="${rb}" var="enterText"/>
-				<p><input type="submit" value="${enterText}"/></p>
+				<p>
+					<label for="password"> ${passwordText}:</label>
+				</p>
+				<p>
+					<input type="password" id="password" name="password"
+						value="${passwordText}"
+						onBlur="if(this.value=='')this.value='Пароль'"
+						onFocus="if(this.value=='Пароль')this.value=''" />
+				</p>
+				<p>
+					<label>${errorLoginPassMessage} ${wrongAction} ${nullPage}
+					</label>
+				</p>
+				<fmt:message key="login.enter" bundle="${rb}" var="enterText" />
+				<p>
+					<input type="submit" value="${enterText}" />
+				</p>
 			</fieldset>
+
 		</form>
+		<form action="pages" method="post">
+			<input type="hidden" name="command" value="registration" />
+			<p>
+				<input class="simpleBtnRegistr" type="submit"
+					value="Registration${logOutText}" />
+			</p>
+		</form>
+
 	</div>
 
 </body>
-</html>
+	</html>
 </jsp:root>
 
 

@@ -4,66 +4,58 @@ import java.io.Serializable;
 import javax.persistence.*;
 import java.util.List;
 
-
 /**
  * The persistent class for the test database table.
  * 
  */
 @Entity
-@NamedQuery(name="Test.findAll", query="SELECT t FROM Test t")
+@NamedQuery(name = "Test.findAll", query = "SELECT t FROM Test t")
 public class Test implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name="test_id")
+	@Column(name = "test_id")
 	private int testId;
 
-	@Column(name="test_active")
+	@Column(name = "test_active")
 	private byte testActive;
 
-	@Column(name="test_description")
+	@Column(name = "test_description")
 	private String testDescription;
 
-	@Column(name="test_name")
+	@Column(name = "test_name")
 	private String testName;
 
-	@Column(name="test_rnd_answer")
+	@Column(name = "test_rnd_answer")
 	private byte testRndAnswer;
 
-	@Column(name="test_rnd_question")
+	@Column(name = "test_rnd_question")
 	private byte testRndQuestion;
 
-	@Column(name="test_type")
+	@Column(name = "test_type")
 	private int testType;
 
-	//bi-directional many-to-one association to Task
-	@OneToMany(mappedBy="test")
+	// bi-directional many-to-one association to Task
+	@OneToMany(mappedBy = "test")
 	private List<Task> tasks;
 
-	//bi-directional many-to-one association to User
+	// bi-directional many-to-one association to User
 	@ManyToOne
-	@JoinColumn(name="user_id")
+	@JoinColumn(name = "user_id")
 	private User user;
-    private int userId;
-	//bi-directional many-to-one association to TestQuestionsBank
-	@OneToMany(mappedBy="test")
+	private int userId;
+	// bi-directional many-to-one association to TestQuestionsBank
+	@OneToMany(mappedBy = "test")
 	private List<TestQuestionsBank> testQuestionsBanks;
 
-	//bi-directional many-to-many association to Category
+	// bi-directional many-to-many association to Category
 	@ManyToMany
-	@JoinTable(
-		name="test_to_category_relationship"
-		, joinColumns={
-			@JoinColumn(name="test_id")
-			}
-		, inverseJoinColumns={
-			@JoinColumn(name="category_id")
-			}
-		)
+	@JoinTable(name = "test_to_category_relationship", joinColumns = {
+			@JoinColumn(name = "test_id") }, inverseJoinColumns = { @JoinColumn(name = "category_id") })
 	private List<Category> categories;
 
-	//bi-directional many-to-many association to Community
-	@ManyToMany(mappedBy="tests")
+	// bi-directional many-to-many association to Community
+	@ManyToMany(mappedBy = "tests")
 	private List<Community> communities;
 
 	public Test() {
@@ -199,6 +191,55 @@ public class Test implements Serializable {
 
 	public void setCommunities(List<Community> communities) {
 		this.communities = communities;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + testActive;
+		result = prime * result + ((testDescription == null) ? 0 : testDescription.hashCode());
+		result = prime * result + testId;
+		result = prime * result + ((testName == null) ? 0 : testName.hashCode());
+		result = prime * result + testRndAnswer;
+		result = prime * result + testRndQuestion;
+		result = prime * result + testType;
+		result = prime * result + userId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Test other = (Test) obj;
+		if (testActive != other.testActive)
+			return false;
+		if (testDescription == null) {
+			if (other.testDescription != null)
+				return false;
+		} else if (!testDescription.equals(other.testDescription))
+			return false;
+		if (testId != other.testId)
+			return false;
+		if (testName == null) {
+			if (other.testName != null)
+				return false;
+		} else if (!testName.equals(other.testName))
+			return false;
+		if (testRndAnswer != other.testRndAnswer)
+			return false;
+		if (testRndQuestion != other.testRndQuestion)
+			return false;
+		if (testType != other.testType)
+			return false;
+		if (userId != other.userId)
+			return false;
+		return true;
 	}
 
 	@Override

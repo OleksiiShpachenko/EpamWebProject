@@ -7,14 +7,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
+
 import com.shpach.tutor.manager.Config;
 import com.shpach.tutor.persistance.entities.Community;
 import com.shpach.tutor.persistance.entities.User;
-import com.shpach.tutor.servise.CommunityService;
-import com.shpach.tutor.servise.SessionServise;
-import com.shpach.tutor.servise.UserService;
+import com.shpach.tutor.service.CommunityService;
+import com.shpach.tutor.service.SessionServise;
+import com.shpach.tutor.service.UserService;
 
+/**
+ * Command which add new Community to database
+ * 
+ * @author Shpachenko_A_K
+ *
+ */
 public class CommandNewCommunity implements ICommand {
+	private static final Logger logger = Logger.getLogger(CommandNewCommunity.class);
+
 	@Override
 	public String execute(HttpServletRequest request, HttpServletResponse responce)
 			throws ServletException, IOException {
@@ -23,23 +33,26 @@ public class CommandNewCommunity implements ICommand {
 
 		HttpSession session = request.getSession(false);
 
-		if (session == null)
+		if (session == null) {
+			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
+		}
 		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
+			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
 		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
-	    
-		String categoryName=request.getParameter("comm_name");
-		Community community= new Community();
+
+		String categoryName = request.getParameter("comm_name");
+		Community community = new Community();
 		community.setCommunityName(categoryName);
-		community.setCommunityActive((byte)1);
-		boolean isOk=CommunityService.addNewCommunity(community, user);
+		community.setCommunityActive((byte) 1);
+		boolean isOk = CommunityService.addNewCommunity(community, user);
 		request.setAttribute("addCommunityStatus", isOk);
-	
-		page ="/pages"; 
+
+		page = "/pages";
 		return page;
 	}
 
