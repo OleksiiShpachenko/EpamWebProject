@@ -37,19 +37,19 @@ public class CommandNewCommunity implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 
 		String categoryName = request.getParameter("comm_name");
 		Community community = new Community();
 		community.setCommunityName(categoryName);
 		community.setCommunityActive((byte) 1);
-		boolean isOk = CommunityService.addNewCommunity(community, user);
+		boolean isOk = CommunityService.getInstance().addNewCommunity(community, user);
 		request.setAttribute("addCommunityStatus", isOk);
 
 		page = "/pages";

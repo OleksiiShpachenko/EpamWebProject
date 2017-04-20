@@ -28,6 +28,7 @@ public class AnswersLog implements Serializable {
 	@ManyToOne
 	@JoinColumn(name="answer_id")
 	private Answer answer;
+	private int answerId;
 
 	//bi-directional many-to-one association to QuestionLog
 	@ManyToOne
@@ -67,6 +68,14 @@ public class AnswersLog implements Serializable {
 
 	public void setAnswer(Answer answer) {
 		this.answer = answer;
+	}
+
+	public int getAnswerId() {
+		return answerId;
+	}
+
+	public void setAnswerId(int answerId) {
+		this.answerId = answerId;
 	}
 
 	public QuestionLog getQuestionLog() {

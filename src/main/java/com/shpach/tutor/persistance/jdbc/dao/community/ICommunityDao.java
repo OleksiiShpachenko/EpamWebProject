@@ -9,9 +9,9 @@ public interface ICommunityDao {
 	public Community addOrUpdate(Community community);
 	public Community findCommunityById(int id);
 	public List<Community> findCommunityByUserId(int id);
-	public List<Community> findCommunityByTestId(int id);
+	public List<Community> findCommunityByCategoryId(int id);
 	public boolean assignUserToCommunity(int userId, int communityId);
-	public boolean assignTestToCommunity(int testId, int communityId);
+	public boolean assignCategoryToCommunity(int testId, int communityId);
 	
 
 }

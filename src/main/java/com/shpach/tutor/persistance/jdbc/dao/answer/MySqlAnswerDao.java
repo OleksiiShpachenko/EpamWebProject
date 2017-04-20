@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.Answer;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.test.MySqlTestDao;
 
 public class MySqlAnswerDao extends AbstractDao<Answer> implements IAnswerDao {
 	private static final Logger logger = Logger.getLogger(MySqlAnswerDao.class);
@@ -58,8 +57,9 @@ public class MySqlAnswerDao extends AbstractDao<Answer> implements IAnswerDao {
 			return instance;
 
 	}
+
 	@Override
-	protected Answer populateDto(ResultSet rs) throws SQLException {
+	public Answer populateDto(ResultSet rs) throws SQLException {
 		Answer dto = new Answer();
 		dto.setAnswerId(rs.getInt(Columns.answer_id.getId()));
 		dto.setQuestionId(rs.getInt(Columns.question_id.getId()));
@@ -71,14 +71,7 @@ public class MySqlAnswerDao extends AbstractDao<Answer> implements IAnswerDao {
 	}
 
 	public List<Answer> findAll() {
-		List<Answer> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-			e.printStackTrace();
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public Answer addOrUpdate(Answer answer) {
@@ -112,23 +105,14 @@ public class MySqlAnswerDao extends AbstractDao<Answer> implements IAnswerDao {
 
 	public Answer findAnswerById(int id) {
 		List<Answer> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.answer_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.answer_id.name(), Integer.toString(id));
+
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
 	public List<Answer> findAnswerByQuestionId(int id) {
-		List<Answer> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.question_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, Columns.question_id.name(), Integer.toString(id));
 	}
 }

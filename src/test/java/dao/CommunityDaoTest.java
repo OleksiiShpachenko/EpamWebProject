@@ -1,182 +1,48 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.NamingException;
 
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-import com.shpach.tutor.persistance.entities.Category;
 import com.shpach.tutor.persistance.entities.Community;
-import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
-import com.shpach.tutor.persistance.jdbc.dao.category.ICategoryDao;
 import com.shpach.tutor.persistance.jdbc.dao.community.ICommunityDao;
+import com.shpach.tutor.persistance.jdbc.dao.community.MySqlCommunityDao;
 import com.shpach.tutor.persistance.jdbc.dao.factory.IDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 
-@PowerMockIgnore("javax.management.*")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
-public class CommunityDaoTest {
-	private Connection mockConnection;
-	private PreparedStatement mockPreparedStmnt;
-	private ResultSet mockResultSet;
+public class CommunityDaoTest extends DaoTest {
+	private ICommunityDao communityDao;
+	private MySqlCommunityDao spyCommunityDao;
 
 	@Before
-	public void init() {
-		mockConnection = Mockito.mock(Connection.class);
-		mockPreparedStmnt = Mockito.mock(PreparedStatement.class);
-		mockResultSet = Mockito.mock(ResultSet.class);
+	public void init() throws SQLException {
+		super.init();
+		IDaoFactory daoFactory = new MySqlDaoFactory();
+		communityDao = daoFactory.getCommunityDao();
+		spyCommunityDao = (MySqlCommunityDao) spy(communityDao);
 	}
 
 	@Test
-	public void findCommunityByIdTestExistId() throws SQLException, NamingException {
-		int communtyId = 1;
-		String communityDescription = "Community descr";
-		String communityName = "Community name";
-		byte communityActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(communtyId);
-		when(mockResultSet.getByte(anyInt())).thenReturn(communityActive);
-		when(mockResultSet.getString(anyInt())).thenReturn(communityName, communityDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+	public void findAllTest() throws Exception {
+		List<Community> expecteds = new ArrayList<>(Arrays.asList(new Community(), new Community()));
 
-		Community community= new Community();
-		community.setCommunityId(communtyId);
-		community.setCommunityDescription(communityDescription);
-		community.setCommunityName(communityName);
-		community.setCommunityActive(communityActive);
-		
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		Community communityExpected = communityDao.findCommunityById(communtyId);
+		doReturn(expecteds).when(spyCommunityDao).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		assertEquals(communityExpected, community);
-	}
+		List<Community> actuals = spyCommunityDao.findAll();
 
-	@Test
-	public void findCommunityByIdTestNotExistId() throws SQLException, NamingException {
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		Community communityExpected = communityDao.findCommunityById(2);
-
-		assertNull(communityExpected);
-	}
-
-	@Test
-	public void findCommunityByTestIdTestExistId() throws SQLException, NamingException {
-		int communtyId = 1;
-		String communityDescription = "Community descr";
-		String communityName = "Community name";
-		byte communityActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(communtyId);
-		when(mockResultSet.getByte(anyInt())).thenReturn(communityActive);
-		when(mockResultSet.getString(anyInt())).thenReturn(communityName, communityDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-
-		Community community= new Community();
-		community.setCommunityId(communtyId);
-		community.setCommunityDescription(communityDescription);
-		community.setCommunityName(communityName);
-		community.setCommunityActive(communityActive);
-		List<Community> communities = new ArrayList<>();
-		communities.add(community);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communityExpected = communityDao.findCommunityByTestId(2);
-
-		assertArrayEquals(communityExpected.toArray(), communities.toArray());
-	}
-
-	@Test
-	public void findCommunityByTestIdTestNotExistId() throws SQLException, NamingException {
-
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communityExpected = communityDao.findCommunityByTestId(2);
-
-		assertNull(communityExpected);
-	}
-
-	@Test
-	public void findCommunityByUserIdTestExistId() throws SQLException, NamingException {
-		int communtyId = 1;
-		String communityDescription = "Community descr";
-		String communityName = "Community name";
-		byte communityActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(communtyId);
-		when(mockResultSet.getByte(anyInt())).thenReturn(communityActive);
-		when(mockResultSet.getString(anyInt())).thenReturn(communityName, communityDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-
-		Community community= new Community();
-		community.setCommunityId(communtyId);
-		community.setCommunityDescription(communityDescription);
-		community.setCommunityName(communityName);
-		community.setCommunityActive(communityActive);
-		List<Community> communities = new ArrayList<>();
-		communities.add(community);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communityExpected = communityDao.findCommunityByUserId(2);
-
-		assertArrayEquals(communityExpected.toArray(), communities.toArray());
-	}
-
-	@Test
-	public void findCommunityByUserIdTestNotExistId() throws SQLException, NamingException {
-
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communityExpected = communityDao.findCommunityByUserId(2);
-		
-		assertNull(communityExpected);
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
 	}
 
 	@Test
@@ -185,46 +51,195 @@ public class CommunityDaoTest {
 		String communityDescription = "Community descr";
 		String communityName = "Community name";
 		byte communityActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
 
-		Community community= new Community();
-		community.setCommunityId(communtyId);
-		community.setCommunityDescription(communityDescription);
-		community.setCommunityName(communityName);
-		community.setCommunityActive(communityActive);
-		
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		Community communityExpected = communityDao.addOrUpdate(community);
-		
-		assertNotNull(communityExpected);
+		Community expected = new Community();
+		expected.setCommunityId(communtyId);
+		expected.setCommunityDescription(communityDescription);
+		expected.setCommunityName(communityName);
+		expected.setCommunityActive(communityActive);
+
+		doReturn(true).when(spyCommunityDao).dynamicUpdate(anyString(), anyObject());
+
+		Community actual = spyCommunityDao.addOrUpdate(expected);
+
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(), anyObject());
+
+		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void addOrApdateTestNewCategory() throws SQLException, NamingException {
+	public void addOrApdateTestUpdateCommunityFail() throws SQLException, NamingException {
 		int communtyId = 1;
 		String communityDescription = "Community descr";
 		String communityName = "Community name";
 		byte communityActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(communtyId);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-		
-		Community community= new Community();
+
+		Community expected = new Community();
+		expected.setCommunityId(communtyId);
+		expected.setCommunityDescription(communityDescription);
+		expected.setCommunityName(communityName);
+		expected.setCommunityActive(communityActive);
+
+		doReturn(false).when(spyCommunityDao).dynamicUpdate(anyString(), anyObject());
+
+		Community actual = spyCommunityDao.addOrUpdate(expected);
+
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(), anyObject());
+
+		assertNull(actual);
+	}
+
+	@Test
+	public void addOrApdateTestNewCommunity() throws SQLException, NamingException {
+		int communtyId = 1;
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community inserted = new Community();
+		inserted.setCommunityDescription(communityDescription);
+		inserted.setCommunityName(communityName);
+		inserted.setCommunityActive(communityActive);
+
+		Community expected = new Community();
+		expected.setCommunityId(communtyId);
+		expected.setCommunityDescription(communityDescription);
+		expected.setCommunityName(communityName);
+		expected.setCommunityActive(communityActive);
+
+		doReturn(communtyId).when(spyCommunityDao).dynamicAdd(anyString(), anyObject());
+
+		Community actual = spyCommunityDao.addOrUpdate(inserted);
+
+		verify(spyCommunityDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void addOrApdateTestNewCommunityFail() throws SQLException, NamingException {
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community inserted = new Community();
+		inserted.setCommunityDescription(communityDescription);
+		inserted.setCommunityName(communityName);
+		inserted.setCommunityActive(communityActive);
+
+		doReturn(0).when(spyCommunityDao).dynamicAdd(anyString(), anyObject());
+
+		Community actual = spyCommunityDao.addOrUpdate(inserted);
+
+		verify(spyCommunityDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertNull(actual);
+	}
+
+	@Test
+	public void findCommunityByIdTestExistId() throws SQLException, NamingException {
+		int communtyId = 1;
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community expected = new Community();
+		expected.setCommunityId(communtyId);
+		expected.setCommunityDescription(communityDescription);
+		expected.setCommunityName(communityName);
+		expected.setCommunityActive(communityActive);
+
+		doReturn(new ArrayList<Community>(Arrays.asList(expected))).when(spyCommunityDao).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		Community actuals = spyCommunityDao.findCommunityById(communtyId);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertEquals(expected, actuals);
+	}
+
+	@Test
+	public void findCommunityByIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Community>()).when(spyCommunityDao).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		Community actuals = spyCommunityDao.findCommunityById(2);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertNull(actuals);
+	}
+
+	@Test
+	public void findCommunityByCategoryIdTestExistId() throws SQLException, NamingException {
+		int communtyId = 1;
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community community = new Community();
+		community.setCommunityId(communtyId);
 		community.setCommunityDescription(communityDescription);
 		community.setCommunityName(communityName);
 		community.setCommunityActive(communityActive);
-		
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		Community communityExpected = communityDao.addOrUpdate(community);
+		List<Community> expecteds = new ArrayList<>();
+		expecteds.add(community);
 
-		assertEquals(communtyId, communityExpected.getCommunityId());
+		doReturn(expecteds).when(spyCommunityDao).findByDynamicSelect(anyString(), anyObject());
+
+		List<Community> actuals = spyCommunityDao.findCommunityByCategoryId(2);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+		
+		assertArrayEquals(actuals.toArray(), expecteds.toArray());
+	}
+
+	@Test
+	public void findCommunityByCategoryIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Community>()).when(spyCommunityDao).findByDynamicSelect(anyString(),  anyObject());
+
+		List<Community> actuals = spyCommunityDao.findCommunityByCategoryId(2);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+		
+		assertEquals(0, actuals.size());
+	}
+
+	@Test
+	public void findCommunityByUserIdTestExistId() throws SQLException, NamingException {
+		int communtyId = 1;
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community community = new Community();
+		community.setCommunityId(communtyId);
+		community.setCommunityDescription(communityDescription);
+		community.setCommunityName(communityName);
+		community.setCommunityActive(communityActive);
+		List<Community> expecteds = new ArrayList<>();
+		expecteds.add(community);
+
+		doReturn(expecteds).when(spyCommunityDao).findByDynamicSelect(anyString(),  anyObject());
+
+		List<Community> actuals = spyCommunityDao.findCommunityByUserId(2);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(),  anyObject());
+		
+		assertArrayEquals(actuals.toArray(), expecteds.toArray());
+	}
+
+	@Test
+	public void findCommunityByUserIdTestNotExistId() throws SQLException, NamingException {
+		
+		doReturn(new ArrayList<Community>()).when(spyCommunityDao).findByDynamicSelect(anyString(),  anyObject());
+
+		List<Community> actuals = spyCommunityDao.findCommunityByCategoryId(2);
+
+		verify(spyCommunityDao, times(1)).findByDynamicSelect(anyString(),  anyObject());
+		
+		assertEquals(0, actuals.size());
 	}
 
 	@Test
@@ -232,14 +247,12 @@ public class CommunityDaoTest {
 		int userId = 1;
 		int communityId = 2;
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
+		doReturn(true).when(spyCommunityDao).dynamicUpdate(anyString(),  anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		boolean res  = communityDao.assignUserToCommunity(userId, communityId);
+		boolean res = spyCommunityDao.assignUserToCommunity(userId, communityId);;
 
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(),  anyObject());
+		
 		assertTrue(res);
 	}
 
@@ -248,16 +261,76 @@ public class CommunityDaoTest {
 		int userId = 1;
 		int communityId = 2;
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeUpdate()).thenThrow(new SQLException());
+		doReturn(false).when(spyCommunityDao).dynamicUpdate(anyString(),  anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		boolean res  = communityDao.assignUserToCommunity(userId, communityId);
+		boolean res = spyCommunityDao.assignUserToCommunity(userId, communityId);;
+
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(),  anyObject());
+
+		assertFalse(res);
+	}
+	@Test
+	public void assignCategoryToCommunityTestGoodParam() throws SQLException, NamingException {
+		int userId = 1;
+		int communityId = 2;
+
+		doReturn(true).when(spyCommunityDao).dynamicUpdate(anyString(),  anyObject());
+
+		boolean res = spyCommunityDao.assignCategoryToCommunity(userId, communityId);;
+
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(),  anyObject());
+		
+		assertTrue(res);
+	}
+
+	@Test
+	public void assignCategoryToCommunityTestWrongParam() throws SQLException, NamingException {
+		int userId = 1;
+		int communityId = 2;
+
+		doReturn(false).when(spyCommunityDao).dynamicUpdate(anyString(),  anyObject());
+
+		boolean res = spyCommunityDao.assignCategoryToCommunity(userId, communityId);;
+
+		verify(spyCommunityDao, times(1)).dynamicUpdate(anyString(),  anyObject());
 
 		assertFalse(res);
 	}
 
+	@Test
+	public void populateDtoTest() throws SQLException{
+		int communtyId = 1;
+		String communityDescription = "Community descr";
+		String communityName = "Community name";
+		byte communityActive = 1;
+
+		Community expected = new Community();
+		expected.setCommunityId(communtyId);
+		expected.setCommunityDescription(communityDescription);
+		expected.setCommunityName(communityName);
+		expected.setCommunityActive(communityActive);
+		
+		when(mockResultSet.getInt(anyInt())).thenReturn(communtyId);
+		when(mockResultSet.getString(anyInt())).thenReturn(communityName,communityDescription);
+		when(mockResultSet.getByte(anyInt())).thenReturn(communityActive);
+		
+		Community actual= spyCommunityDao.populateDto(mockResultSet);
+		
+		verify(mockResultSet,times(1)).getInt(anyInt());
+		verify(mockResultSet,times(2)).getString(anyInt());
+		verify(mockResultSet,times(1)).getByte(anyInt());
+		
+		assertEquals(expected, actual);
+	}
+	@SuppressWarnings("unused")
+	@Test(expected = SQLException.class)
+	public void populateDtoTestException() throws SQLException{
+	
+		when(mockResultSet.getInt(anyInt())).thenThrow(new SQLException());
+		
+		Community actual= spyCommunityDao.populateDto(mockResultSet);
+		
+		verify(mockResultSet,times(1)).getInt(anyInt());
+		
+	}
 }

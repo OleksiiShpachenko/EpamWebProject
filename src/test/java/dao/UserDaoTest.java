@@ -1,228 +1,195 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.NamingException;
 
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.shpach.tutor.persistance.entities.User;
-import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
 import com.shpach.tutor.persistance.jdbc.dao.factory.IDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.user.IUserDao;
+import com.shpach.tutor.persistance.jdbc.dao.user.MySqlUserDao;
 
-@PowerMockIgnore("javax.management.*")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
-public class UserDaoTest {
-	private Connection mockConnection;
-	private PreparedStatement mockPreparedStmnt;
-	private ResultSet mockResultSet;
+public class UserDaoTest extends DaoTest {
+	private User user_1, user_2;
+	private User userNew = null;
+	private IUserDao userDao;
+	private MySqlUserDao spyUserDao;
 
+	
 	@Before
-	public void init() {
-		mockConnection = Mockito.mock(Connection.class);
-		mockPreparedStmnt = Mockito.mock(PreparedStatement.class);
-		mockResultSet = Mockito.mock(ResultSet.class);
+	public void init() throws SQLException {
+		super.init();
+		IDaoFactory daoFactory = new MySqlDaoFactory();
+		userDao = daoFactory.getUserDao();
+		spyUserDao = (MySqlUserDao) spy(userDao);
+
+		user_1 = new User();
+		user_1.setUserId(1);
+		user_1.setUserName("Lesha");
+		user_1.setUserEmail("q@gmail.com");
+		user_1.setUserPassword("password");
+		user_1.setRoleId(2);
+
+		user_2 = new User();
+		user_2.setUserId(2);
+		user_2.setUserName("Sasha");
+		user_2.setUserEmail("q2@gmail.com");
+		user_2.setUserPassword("password");
+		user_2.setRoleId(2);
+
+		userNew = new User();
+		userNew.setUserName("Lesha");
+		userNew.setUserEmail("q@gmail.com");
+		userNew.setUserPassword("password");
+		userNew.setRoleId(2);
+
 	}
 
 	@Test
 	public void findUserByEmailTestExistEmail() throws SQLException, NamingException {
-		int userId = 1;
-		int userRoleId = 2;
-		String userName = "Lesha";
-		String userEmail = "q@gmail.com";
-		String userPassword = "password";
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(userId, userRoleId);
-		when(mockResultSet.getString(anyInt())).thenReturn(userEmail, userPassword, userName);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+		doReturn(new ArrayList<User>(Arrays.asList(user_1))).when(spyUserDao).findByDynamicSelect(anyString(),
+				anyString(), anyObject());
 
-		User user = new User();
-		user.setUserId(userId);
-		user.setUserName(userName);
-		user.setUserEmail(userEmail);
-		user.setUserPassword(userPassword);
-		user.setRoleId(userRoleId);
+		User actual = spyUserDao.findUserByEmail(user_1.getUserEmail());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.findUserByEmail("q@gmail.com");
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		assertEquals(user, userExpected);
+		assertEquals(user_1, actual);
 	}
+
+	@Test
+	public void findUserByEmailTestNullEmail() throws SQLException, NamingException {
+		User actual = spyUserDao.findUserByEmail(null);
+
+		verify(spyUserDao, times(0)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertNull(actual);
+	}
+
 	@Test
 	public void findUserByEmailTestNotExistEmail() throws SQLException, NamingException {
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-		
+		doReturn(new ArrayList<User>()).when(spyUserDao).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.findUserByEmail("q@gmail.com");
+		User actual = spyUserDao.findUserByEmail("notExistEmail");
 
-		assertNull(userExpected);
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertNull(actual);
 	}
+
 	@Test
-	public void findUserByIdTestExistEmail() throws SQLException, NamingException {
-		int userId = 1;
-		int userRoleId = 2;
-		String userName = "Lesha";
-		String userEmail = "q@gmail.com";
-		String userPassword = "password";
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(userId, userRoleId);
-		when(mockResultSet.getString(anyInt())).thenReturn(userEmail, userPassword, userName);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+	public void findUserByIdTestExistId() throws SQLException, NamingException {
+		doReturn(new ArrayList<User>(Arrays.asList(user_1))).when(spyUserDao).findByDynamicSelect(anyString(),
+				anyString(), anyObject());
 
-		User user = new User();
-		user.setUserId(userId);
-		user.setUserName(userName);
-		user.setUserEmail(userEmail);
-		user.setUserPassword(userPassword);
-		user.setRoleId(userRoleId);
+		User actual = spyUserDao.findUserById(user_1.getUserId());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.findUserById(userId);
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		assertEquals(user, userExpected);
+		assertEquals(user_1, actual);
 	}
+
 	@Test
-	public void findUserByIdTestNotExistEmail() throws SQLException, NamingException {
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-		
+	public void findUserByIdTestNotExistId() throws SQLException, NamingException {
+		doReturn(new ArrayList<User>()).when(spyUserDao).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.findUserById(1);
+		User actual = spyUserDao.findUserById(0);
 
-		assertNull(userExpected);
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertNull(actual);
 	}
+
 	@Test
 	public void addOrApdateTestNewUser() throws SQLException, NamingException {
-		
-		int userId = 1;
-		int userRoleId = 2;
-		String userName = "Lesha";
-		String userEmail = "q@gmail.com";
-		String userPassword = "password";
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(userId);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
 
-		User user = new User();
-		user.setUserName(userName);
-		user.setUserEmail(userEmail);
-		user.setUserPassword(userPassword);
-		user.setRoleId(userRoleId);
+		doReturn(user_1.getUserId()).when(spyUserDao).dynamicAdd(anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.addOrUpdate(user);
+		User actual = spyUserDao.addOrUpdate(userNew);
 
-		assertEquals(userExpected.getUserId(), userId);
+		verify(spyUserDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertEquals(user_1, actual);
 	}
+
+	@Test
+	public void addOrApdateTestNewUserFail() throws SQLException, NamingException {
+
+		doReturn(0).when(spyUserDao).dynamicAdd(anyString(), anyObject());
+
+		User actual = spyUserDao.addOrUpdate(userNew);
+
+		verify(spyUserDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertNull(actual);
+	}
+
 	@Test
 	public void addOrApdateTestUpdateUser() throws SQLException, NamingException {
-		
-		int userId = 1;
-		int userRoleId = 2;
-		String userName = "Lesha";
-		String userEmail = "q@gmail.com";
-		String userPassword = "password";
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
+		doReturn(true).when(spyUserDao).dynamicUpdate(anyString(), anyObject());
 
-		User user = new User();
-		user.setUserId(userId);
-		user.setUserName(userName);
-		user.setUserEmail(userEmail);
-		user.setUserPassword(userPassword);
-		user.setRoleId(userRoleId);
+		User actual = spyUserDao.addOrUpdate(user_1);
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userExpected = userDao.addOrUpdate(user);
+		verify(spyUserDao, times(1)).dynamicUpdate(anyString(), anyObject());
 
-		assertNotNull(userExpected);
+		assertEquals(user_1, actual);
+	}
+
+	@Test
+	public void addOrApdateTestUpdateUserFail() throws SQLException, NamingException {
+		doReturn(false).when(spyUserDao).dynamicUpdate(anyString(), anyObject());
+
+		User actual = spyUserDao.addOrUpdate(user_1);
+
+		verify(spyUserDao, times(1)).dynamicUpdate(anyString(), anyObject());
+
+		assertNull(actual);
 	}
 
 	@Test
 	public void findUsersByCommunityIdTest() throws SQLException, NamingException {
-		
-		int userId = 1;
-		int userRoleId = 2;
-		String userName = "Lesha";
-		String userEmail = "q@gmail.com";
-		String userPassword = "password";
-		int userId_2 = 2;
-		int userRoleId_2 = 2;
-		String userName_2 = "Sasha";
-		String userEmail_2 = "qq@gmail.com";
-		String userPassword_2 = "password2";
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(userId, userRoleId,userId_2, userRoleId_2);
-		when(mockResultSet.getString(anyInt())).thenReturn(userEmail, userPassword, userName,userEmail_2, userPassword_2, userName_2);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE,Boolean.TRUE, Boolean.FALSE);
+		List<User> expecteds = new ArrayList<User>(Arrays.asList(user_1, user_2));
 
-		User user1 = new User();
-		user1.setUserId(userId);
-		user1.setUserName(userName);
-		user1.setUserEmail(userEmail);
-		user1.setUserPassword(userPassword);
-		user1.setRoleId(userRoleId);
+		doReturn(expecteds).when(spyUserDao).findByDynamicSelect(anyString(), anyObject());
 
-		User user2 = new User();
-		user2.setUserId(userId_2);
-		user2.setUserName(userName_2);
-		user2.setUserEmail(userEmail_2);
-		user2.setUserPassword(userPassword_2);
-		user2.setRoleId(userRoleId_2);
-		
-		List<User> users= new ArrayList<>();
-		users.add(user1);
-		users.add(user2);
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		List<User> usersExpected = userDao.findUsersByCommunityId(1);
+		List<User> actuals = spyUserDao.findUsersByCommunityId(1);
 
-		assertArrayEquals(users.toArray(), usersExpected.toArray());
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
+	}
+
+	@Test
+	public void findUsersByCommunityIdTestEmpty() throws SQLException, NamingException {
+		doReturn(new ArrayList<User>()).when(spyUserDao).findByDynamicSelect(anyString(), anyObject());
+
+		List<User> actuals = spyUserDao.findUsersByCommunityId(1);
+
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertEquals(0, actuals.size());
+	}
+
+	@Test
+	public void findAllTest() throws SQLException, NamingException {
+		List<User> expecteds = new ArrayList<>(Arrays.asList(new User(), new User()));
+
+		doReturn(expecteds).when(spyUserDao).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		List<User> actuals = spyUserDao.findAll();
+
+		verify(spyUserDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
 	}
 }

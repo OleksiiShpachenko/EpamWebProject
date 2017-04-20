@@ -2,6 +2,7 @@ package com.shpach.tutor.persistance.jdbc.dao.user;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -64,13 +65,7 @@ public class MySqlUserDao extends AbstractDao<User> implements IUserDao {
 	}
 
 	public List<User> findAll() {
-		List<User> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public User addOrUpdate(User user) {
@@ -105,30 +100,24 @@ public class MySqlUserDao extends AbstractDao<User> implements IUserDao {
 
 	public User findUserById(int id) {
 		List<User> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id);
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
 	public User findUserByEmail(String login) {
+		if (login == null)
+			return null;
 		List<User> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.user_email.name(), login);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.user_email.name(), login);
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
 	@Override
-	protected User populateDto(ResultSet rs) throws SQLException {
+	public User populateDto(ResultSet rs) throws SQLException {
 		User dto = new User();
 		dto.setUserId(rs.getInt(Columns.user_id.getId()));
 		dto.setUserEmail(rs.getString(Columns.user_email.getId()));
@@ -140,16 +129,11 @@ public class MySqlUserDao extends AbstractDao<User> implements IUserDao {
 
 	@Override
 	public List<User> findUsersByCommunityId(int id) {
-
 		List<User> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT_BY_COMMUNITY_ID, new Integer[] { id });
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT_BY_COMMUNITY_ID, new Integer[] { id });
 		if (res != null && res.size() > 0)
 			return res;
-		return null;
+		return new ArrayList<User>();
 	}
 
 }

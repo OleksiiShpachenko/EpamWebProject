@@ -4,13 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.QuestionLog;
-import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
+import com.shpach.tutor.persistance.jdbc.connection.ConnectionPoolTomCatFactory;
+import com.shpach.tutor.persistance.jdbc.connection.IConnectionPoolFactory;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
+
 
 public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQuestionLogDao {
 	private static final Logger logger = Logger.getLogger(MySqlQuestionLogDao.class);
@@ -57,12 +59,25 @@ public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQu
 			return instance;
 
 	}
+	public List<QuestionLog> findAll() {
+		List<QuestionLog> res = null;
+		try {
+			res = findByDynamicSelect(SQL_SELECT, null, null);
+		} catch (Exception e) {
+			logger.error(e, e);
+		}
+		return res;
+	}
 	
 	@Override
-	protected QuestionLog populateDto(ResultSet rs) throws SQLException {
-		// TODO Auto-generated method stub
-		return null;
+	public QuestionLog populateDto(ResultSet rs) throws SQLException {
+		QuestionLog dto = new QuestionLog();
+		dto.setQuestionLogId(rs.getInt(Columns.question_log_id.getId()));
+		dto.setQuestionId((rs.getInt(Columns.question_id.getId())));
+		return dto;
 	}
+	
+	
 
 	@Override
 	public QuestionLog addOrUpdate(QuestionLog questionLog) {
@@ -70,7 +85,9 @@ public class MySqlQuestionLogDao extends AbstractDao<QuestionLog> implements IQu
 		QuestionLog questionLogNew = null;
 
 		try {
-			connection = ConnectionPool.getConnection();
+			//connection = ConnectionPool.getConnection();
+			IConnectionPoolFactory connectionFactory = (IConnectionPoolFactory) new ConnectionPoolTomCatFactory();
+			connection= connectionFactory.getConnection();
 			connection.setAutoCommit(false);
 			questionLogNew = addOrUpdate(questionLog, connection);
 			connection.setAutoCommit(true);

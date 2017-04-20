@@ -278,7 +278,7 @@
 		<c:import url="/WEB-INF/jsp/menu.jspx" />
 		<div class="table">
 			<div class="table-utility row">
-				<div class="col-span-1">
+				<div class="col-span-8">
 					<div class="dropdown dropdown-x hide_if_no_data">
 						<a class="dropdown-toggle no_anchor" href="#"> Options </a>
 						<ul class="dropdown-menu">
@@ -289,6 +289,7 @@
 						</ul>
 					</div>
 				</div>
+				<!-- 
 				<div class="col-span-7">
 					<span id="cat_filter" class="search_filter hide_if_no_data"></span>
 					<span class="hide_if_no_data  not-ie67"> <input type="text"
@@ -296,6 +297,7 @@
 						class="hide_if_no_data" /> <span class="only-ie little">Search
 							Test Name</span></span>
 				</div>
+				-->
 				<div class="col-span-2 col-btns">
 					<fmt:message key="tutor.questions.newQuestion" bundle="${rb}"
 						var="newQuestionText" />
@@ -318,6 +320,7 @@
 							<div class="col-span-4 col-btns">
 								<div class="inlineBox">
 									<div>
+									<!-- 
 										<form id="myHiddenFormId" action="pages" method="post">
 											<input type="hidden" name="command" value="editTest" /> <input
 												type="hidden" name="categoryId" value="${elem.questionId}" />
@@ -326,6 +329,7 @@
 											<input class="simpleBtnLink" type="submit"
 												value="${editText}" />
 										</form>
+										-->
 									</div>
 
 								</div>

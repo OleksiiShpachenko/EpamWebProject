@@ -2,50 +2,51 @@ package com.shpach.tutor.persistance.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The persistent class for the question database table.
  * 
  */
 @Entity
-@NamedQuery(name="Question.findAll", query="SELECT q FROM Question q")
+@NamedQuery(name = "Question.findAll", query = "SELECT q FROM Question q")
 public class Question implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name="question_id")
+	@Column(name = "question_id")
 	private int questionId;
 
-	@Column(name="question_active")
+	@Column(name = "question_active")
 	private byte questionActive;
 
 	@Lob
-	@Column(name="question_text")
+	@Column(name = "question_text")
 	private String questionText;
-	
+
 	@Lob
-	@Column(name="question_name")
+	@Column(name = "question_name")
 	private String questionName;
 
-	//bi-directional many-to-one association to Answer
-	@OneToMany(mappedBy="question")
+	// bi-directional many-to-one association to Answer
+	@OneToMany(mappedBy = "question")
 	private List<Answer> answers;
 
-	//bi-directional many-to-one association to User
+	// bi-directional many-to-one association to User
 	@ManyToOne
-	@JoinColumn(name="user_id")
+	@JoinColumn(name = "user_id")
 	private User user;
-	
+
 	private int userId;
 
-	//bi-directional many-to-one association to QuestionLog
-	@OneToMany(mappedBy="question")
+	// bi-directional many-to-one association to QuestionLog
+	@OneToMany(mappedBy = "question")
 	private List<QuestionLog> questionLogs;
 
-	//bi-directional many-to-one association to TestQuestionsBank
-	@OneToMany(mappedBy="question")
+	// bi-directional many-to-one association to TestQuestionsBank
+	@OneToMany(mappedBy = "question")
 	private List<TestQuestionsBank> testQuestionsBanks;
 
 	public Question() {
@@ -84,6 +85,7 @@ public class Question implements Serializable {
 	}
 
 	public List<Answer> getAnswers() {
+
 		return this.answers;
 	}
 
@@ -92,6 +94,8 @@ public class Question implements Serializable {
 	}
 
 	public Answer addAnswer(Answer answer) {
+		if (getAnswers() == null)
+			setAnswers(new ArrayList<Answer>());
 		getAnswers().add(answer);
 		answer.setQuestion(this);
 
@@ -113,6 +117,7 @@ public class Question implements Serializable {
 		this.user = user;
 		setUserId(user.getUserId());
 	}
+
 	public int getUserId() {
 		return this.userId;
 	}
@@ -120,6 +125,7 @@ public class Question implements Serializable {
 	public void setUserId(int id) {
 		this.userId = id;
 	}
+
 	public List<QuestionLog> getQuestionLogs() {
 		return this.questionLogs;
 	}
@@ -151,6 +157,8 @@ public class Question implements Serializable {
 	}
 
 	public TestQuestionsBank addTestQuestionsBank(TestQuestionsBank testQuestionsBank) {
+		if (getTestQuestionsBanks() == null)
+			setTestQuestionsBanks(new ArrayList<TestQuestionsBank>());
 		getTestQuestionsBanks().add(testQuestionsBank);
 		testQuestionsBank.setQuestion(this);
 

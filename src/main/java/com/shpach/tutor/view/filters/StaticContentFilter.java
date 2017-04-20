@@ -56,7 +56,7 @@ public class StaticContentFilter implements Filter {
 		boolean checkSession = false;
 
 		if (session != null)
-			checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+			checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (checkSession) {
 			String indexPage = Config.getInstance().getProperty(Config.INDEX);
 			if (url.equals(indexPage)) {

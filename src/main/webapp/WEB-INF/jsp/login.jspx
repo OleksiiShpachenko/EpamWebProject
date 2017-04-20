@@ -15,7 +15,7 @@
 <head>
 <link rel="stylesheet" href="styles/loginStyle.css" media="screen"
 	type="text/css" />
-<title>Hello !</title>
+<title>Tutor</title>
 <script type="text/javascript" src="js/jquery.js">
 	<jsp:text />
 </script>
@@ -61,10 +61,10 @@ div.style.display = "block";
 				</p>
 
 				<p>
-					<label for="password"> ${passwordText}:</label>
+					<label for="passwordInput"> ${passwordText}:</label>
 				</p>
 				<p>
-					<input type="password" id="password" name="password"
+					<input type="password" id="passwordInput" name="password"
 						value="${passwordText}"
 						onBlur="if(this.value=='')this.value='Пароль'"
 						onFocus="if(this.value=='Пароль')this.value=''" />
@@ -83,8 +83,9 @@ div.style.display = "block";
 		<form action="pages" method="post">
 			<input type="hidden" name="command" value="registration" />
 			<p>
+			<fmt:message key="registration.registration" bundle="${rb}" var="registrationText" />
 				<input class="simpleBtnRegistr" type="submit"
-					value="Registration${logOutText}" />
+					value="${registrationText}" />
 			</p>
 		</form>
 

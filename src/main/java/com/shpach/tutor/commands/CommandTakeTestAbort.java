@@ -32,7 +32,7 @@ public class CommandTakeTestAbort implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");

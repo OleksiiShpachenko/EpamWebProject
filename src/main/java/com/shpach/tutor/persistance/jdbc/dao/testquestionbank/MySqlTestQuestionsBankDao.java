@@ -4,14 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.TestQuestionsBank;
-import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
+import com.shpach.tutor.persistance.jdbc.connection.ConnectionPoolTomCatFactory;
+import com.shpach.tutor.persistance.jdbc.connection.IConnectionPoolFactory;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.test.MySqlTestDao;
 
 public class MySqlTestQuestionsBankDao extends AbstractDao<TestQuestionsBank> implements ITestQuestionsBankDao {
 	private static final Logger logger = Logger.getLogger(MySqlTestQuestionsBankDao.class);
@@ -60,8 +61,9 @@ public class MySqlTestQuestionsBankDao extends AbstractDao<TestQuestionsBank> im
 			return instance;
 
 	}
+
 	@Override
-	protected TestQuestionsBank populateDto(ResultSet rs) throws SQLException {
+	public TestQuestionsBank populateDto(ResultSet rs) throws SQLException {
 		TestQuestionsBank dto = new TestQuestionsBank();
 		dto.setTestQuestionsBankId(rs.getInt(Columns.test_questions_bank_id.getId()));
 		dto.setTestId(rs.getInt(Columns.test_id.getId()));
@@ -71,13 +73,7 @@ public class MySqlTestQuestionsBankDao extends AbstractDao<TestQuestionsBank> im
 	}
 
 	public List<TestQuestionsBank> findAll() {
-		List<TestQuestionsBank> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public TestQuestionsBank addOrUpdate(TestQuestionsBank testQuestionsBank) {
@@ -133,7 +129,7 @@ public class MySqlTestQuestionsBankDao extends AbstractDao<TestQuestionsBank> im
 
 	@Override
 	public List<TestQuestionsBank> findTestQuestionsBankByQuestionId(int id) {
-		List<TestQuestionsBank> res = null;
+		List<TestQuestionsBank> res = new ArrayList<>();
 		try {
 			res = findByDynamicSelect(SQL_SELECT, Columns.question_id.name(), Integer.toString(id));
 		} catch (Exception e) {
@@ -144,13 +140,11 @@ public class MySqlTestQuestionsBankDao extends AbstractDao<TestQuestionsBank> im
 
 	@Override
 	public int findMaxquestionDefaultSortingOrderByTestId(int testId) {
-
-		//ConnectionPool pool = ConnectionPool.getInstance();
 		try {
 
 			Connection cn = null;
 			try {
-				cn =ConnectionPool.getConnection();// pool.getConnection();
+				cn = getConnection();
 				PreparedStatement st = null;
 				String SQL = SQL_SELECT_MAX_ORDER;
 				try {

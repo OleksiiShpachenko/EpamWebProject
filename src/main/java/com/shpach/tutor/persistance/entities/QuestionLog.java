@@ -37,6 +37,8 @@ public class QuestionLog implements Serializable {
 	@ManyToOne
 	@JoinColumn(name="question_id")
 	private Question question;
+	
+	private int questionId;
 
 	public QuestionLog() {
 	}
@@ -53,6 +55,14 @@ public class QuestionLog implements Serializable {
 
 	public int getQuestionLogSortingOrder() {
 		return questionLogSortingOrder;
+	}
+
+	public int getQuestionId() {
+		return questionId;
+	}
+
+	public void setQuestionId(int questionId) {
+		this.questionId = questionId;
 	}
 
 	public void setQuestionLogSortingOrder(int questionLogSortingOrder) {

@@ -40,10 +40,10 @@ public class StudentTestToCommunityStatisticTag extends TagSupport {
 	public int doStartTag() throws JspException {
 		String res = "";
 
-		long count = community.getTests().stream().filter(c -> c.getTestId() == test.getTestId()).count();
+		long count = 0; //TODO change insertParam to Category //community.getTests().stream().filter(c -> c.getTestId() == test.getTestId()).count();
 
 		if (count > 0) {
-			int average = TaskService.CalculateAverageScore(test.getTasks());
+			int average = TaskService.getInstance().CalculateAverageScore(test.getTasks());
 			if (average == TaskService.EXLUDABLE_AVERAGE)
 				res = "Not passed";
 			else

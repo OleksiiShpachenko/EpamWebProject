@@ -2,13 +2,13 @@ package com.shpach.tutor.persistance.jdbc.dao.community;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.Community;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
 
 public class MySqlCommunityDao extends AbstractDao<Community> implements ICommunityDao {
 	private static final Logger logger = Logger.getLogger(MySqlCommunityDao.class);
@@ -34,7 +34,7 @@ public class MySqlCommunityDao extends AbstractDao<Community> implements ICommun
 
 	protected static final String TABLE_NAME = "community";
 	protected static final String TABLE_USER_TO_COMMUNITY_RELATIONSHIP = "user_to_community_relationship";
-	protected static final String TABLE_TEST_TO_COMMUNITY_RELATIONSHIP = "test_to_community_relationship";
+	protected static final String TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP = "category_to_community_relationship";
 	protected final String SQL_SELECT = "SELECT " + Columns.community_id.name() + ", " + Columns.community_name.name()
 			+ ", " + Columns.community_description.name() + ", " + Columns.community_active.name() + " FROM "
 			+ TABLE_NAME + "";
@@ -50,16 +50,16 @@ public class MySqlCommunityDao extends AbstractDao<Community> implements ICommun
 			+ TABLE_USER_TO_COMMUNITY_RELATIONSHIP + ".user_id=? AND " + TABLE_USER_TO_COMMUNITY_RELATIONSHIP + "."
 			+ Columns.community_id.name() + "=" + TABLE_NAME + "." + Columns.community_id.name();
 
-	protected final String SQL_SELECT_BY_TEST_ID = "SELECT " + TABLE_NAME + "." + Columns.community_id.name() + ", "
+	protected final String SQL_SELECT_BY_CATEGORY_ID = "SELECT " + TABLE_NAME + "." + Columns.community_id.name() + ", "
 			+ TABLE_NAME + "." + Columns.community_name.name() + ", " + TABLE_NAME + "."
 			+ Columns.community_description.name() + ", " + TABLE_NAME + "." + Columns.community_active.name()
-			+ " FROM " + TABLE_NAME + ", " + TABLE_TEST_TO_COMMUNITY_RELATIONSHIP + " WHERE "
-			+ TABLE_TEST_TO_COMMUNITY_RELATIONSHIP + ".test_id=? AND " + TABLE_TEST_TO_COMMUNITY_RELATIONSHIP + "."
+			+ " FROM " + TABLE_NAME + ", " + TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + " WHERE "
+			+ TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + ".category_id=? AND " + TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + "."
 			+ Columns.community_id.name() + "=" + TABLE_NAME + "." + Columns.community_id.name();
 	protected final String SQL_INSERT_USER_TOCOMMUNITY = "INSERT INTO " + TABLE_USER_TO_COMMUNITY_RELATIONSHIP + " ("
 			+ Columns.community_id.name() + ", " + "user_id" + ") VALUES (?, ?)";
-	protected final String SQL_INSERT_TEST_TOCOMMUNITY = "INSERT INTO " + TABLE_TEST_TO_COMMUNITY_RELATIONSHIP + " ("
-			+ Columns.community_id.name() + ", " + "test_id" + ") VALUES (?, ?)";
+	protected final String SQL_INSERT_CATEGORY_TOCOMMUNITY = "INSERT INTO " + TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + " ("
+			+ Columns.community_id.name() + ", " + "category_id" + ") VALUES (?, ?)";
 
 	private static MySqlCommunityDao instance = null;
 
@@ -76,13 +76,7 @@ public class MySqlCommunityDao extends AbstractDao<Community> implements ICommun
 	}
 	
 	public List<Community> findAll() {
-		List<Community> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public Community addOrUpdate(Community community) {
@@ -129,30 +123,22 @@ public class MySqlCommunityDao extends AbstractDao<Community> implements ICommun
 
 	public List<Community> findCommunityByUserId(int id) {
 		List<Community> res = null;
-		try {
 			res = findByDynamicSelect(SQL_SELECT_BY_USER_ID, new Integer[] { id });
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
 		if (res != null && res.size() > 0)
 			return res;
-		return null;
+		return new ArrayList<Community>();
 	}
 
-	public List<Community> findCommunityByTestId(int id) {
+	public List<Community> findCommunityByCategoryId(int id) {
 		List<Community> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT_BY_TEST_ID, new Integer[] { id });
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+			res = findByDynamicSelect(SQL_SELECT_BY_CATEGORY_ID, new Integer[] { id });
 		if (res != null && res.size() > 0)
 			return res;
-		return null;
+		return new ArrayList<Community>();
 	}
 
 	@Override
-	protected Community populateDto(ResultSet rs) throws SQLException {
+	public Community populateDto(ResultSet rs) throws SQLException {
 		Community dto = new Community();
 		dto.setCommunityId(rs.getInt(Columns.community_id.getId()));
 		dto.setCommunityName(rs.getString(Columns.community_name.getId()));
@@ -168,8 +154,8 @@ public class MySqlCommunityDao extends AbstractDao<Community> implements ICommun
 	}
 
 	@Override
-	public boolean assignTestToCommunity(int testId, int communityId) {
+	public boolean assignCategoryToCommunity(int testId, int communityId) {
 		Object[] sqlParams = new Object[] { communityId, testId };
-		return dynamicUpdate(SQL_INSERT_TEST_TOCOMMUNITY, sqlParams);
+		return dynamicUpdate(SQL_INSERT_CATEGORY_TOCOMMUNITY, sqlParams);
 	}
 }

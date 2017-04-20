@@ -48,7 +48,7 @@ public class UserGreetingsTag extends TagSupport {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("<ul class=\"upgrade-logout-nav\">");
-			sb.append("<li><a href=\"#\">" + rs.getString("header.greetings") + "&#160; " + user.getUserName()
+			sb.append("<li><a href=\"#\">" + rs.getString("header.greetings") + "&#160; <c:out escapeXml=\"true\" value=\"" + user.getUserName()+"\"/>"
 					+ "</a></li>");
 			sb.append("<li><a href=\"#\">" + rs.getString("header.status") + ":&#160;" + usersRole.getRoleName()
 					+ "</a></li>");

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.shpach.tutor.persistance.entities.Category;
 import com.shpach.tutor.persistance.entities.Community;
 import com.shpach.tutor.persistance.entities.Test;
 import com.shpach.tutor.persistance.entities.User;
@@ -13,12 +14,48 @@ import com.shpach.tutor.persistance.jdbc.dao.factory.IDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 
 /**
- * Collection of services for {@link Community} entity class
+ * Service layer for {@link Community} entity class
  * 
  * @author Shpachenko_A_K
  *
  */
 public class CommunityService {
+	private static CommunityService instance;
+	private ICommunityDao communityDao;
+	private CategoryService categoryService;
+	private UserService userService;
+
+	private CommunityService() {
+
+	}
+
+	public static synchronized CommunityService getInstance() {
+		if (instance == null) {
+			instance = new CommunityService();
+		}
+		return instance;
+	}
+
+	private ICommunityDao getCommunityDao() {
+		if (communityDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			communityDao = daoFactory.getCommunityDao();
+		}
+		return communityDao;
+	}
+
+	private CategoryService getCategoryService() {
+		if (categoryService == null)
+			categoryService = CategoryService.getInstance();
+		return categoryService;
+	}
+
+	private UserService getUserService() {
+		if (userService == null)
+			userService = UserService.getInstance();
+		return userService;
+	}
+
 	/**
 	 * Gets list of {@link Community} from database by {@link User}
 	 * 
@@ -26,10 +63,10 @@ public class CommunityService {
 	 *            - {@link User} entity class
 	 * @return list of {@link Community}
 	 */
-	public static int getCommunityCountByUser(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communities = communityDao.findCommunityByUserId(user.getUserId());
+	public int getCommunityCountByUser(User user) {
+		if (user == null)
+			return 0;
+		List<Community> communities = getCommunityDao().findCommunityByUserId(user.getUserId());
 		return communities != null ? communities.size() : 0;
 	}
 
@@ -40,27 +77,32 @@ public class CommunityService {
 	 *            - {@link Test} entity class
 	 * @return list of {@link Community}
 	 */
-	public static List<Community> getCommunityByTest(Test test) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		return communityDao.findCommunityByTestId(test.getTestId());
+	public List<Community> getCommunityByCategory(Category category) {
+		if (category == null)
+			return new ArrayList<Community>();
+		List<Community> res = getCommunityDao().findCommunityByCategoryId(category.getCategoryId());
+		if (res == null)
+			res = new ArrayList<Community>();
+		return res;
 	}
 
 	/**
 	 * Gets list of {@link Community} from database by {@link User} with
-	 * assigned list of {@link Test} and {@link User}
+	 * assigned list of {@link Category} and {@link User}
 	 * 
 	 * @param user
 	 *            - {@link User} entity class
 	 * @return list of {@link Community}
 	 */
-	public static List<Community> getCommunitiesByUserWithTestsAndUsers(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		List<Community> communities = communityDao.findCommunityByUserId(user.getUserId());
+	public List<Community> getCommunitiesByUserWithCategoriesAndUsers(User user) {
+		if (user == null)
+			return new ArrayList<Community>();
+		List<Community> communities = getCommunityDao().findCommunityByUserId(user.getUserId());
 		if (communities != null) {
-			insertTestsToCommunities(communities);
+			insertCategoriesToCommunities(communities);
 			insertUsersToCommunities(communities);
+		} else {
+			return new ArrayList<Community>();
 		}
 		return communities;
 	}
@@ -71,9 +113,9 @@ public class CommunityService {
 	 * @param communities
 	 *            - list of {@link Community}
 	 */
-	private static void insertUsersToCommunities(List<Community> communities) {
+	private void insertUsersToCommunities(List<Community> communities) {
 		for (Community item : communities) {
-			item.setUsers(UserService.getUsersByCommunity(item));
+			item.setUsers(getUserService().getUsersByCommunity(item));
 		}
 
 	}
@@ -84,9 +126,9 @@ public class CommunityService {
 	 * @param communities
 	 *            - list of {@link Community}
 	 */
-	private static void insertTestsToCommunities(List<Community> communities) {
+	private void insertCategoriesToCommunities(List<Community> communities) {
 		for (Community item : communities) {
-			item.setTests(TestService.getTestsByCommunity(item));
+			item.setCategories(getCategoryService().getCategoriesByCommunity(item));
 		}
 	}
 
@@ -99,13 +141,13 @@ public class CommunityService {
 	 *            - {@link User} witch create a {@link Community}
 	 * @return boolean values is operation success
 	 */
-	public static boolean addNewCommunity(Community community, User userAdmin) {
+	public  boolean addNewCommunity(Community community, User userAdmin) {
 		boolean res = false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		Community comm = communityDao.addOrUpdate(community);
+		if (community==null || userAdmin==null)
+			return res;
+		Community comm = getCommunityDao().addOrUpdate(community);
 		if (comm != null) {
-			res = communityDao.assignUserToCommunity(userAdmin.getUserId(), community.getCommunityId());
+			res = assignUserToCommunity(userAdmin.getUserId(), community.getCommunityId());
 		}
 		return res;
 	}
@@ -119,12 +161,8 @@ public class CommunityService {
 	 *            - id of {@link Community} in int format
 	 * @return boolean values is operation success
 	 */
-	public static boolean assignUserToCommunity(int userId, int communityId) {
-		boolean res = false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		res = communityDao.assignUserToCommunity(userId, communityId);
-		return res;
+	public  boolean assignUserToCommunity(int userId, int communityId) {
+			return getCommunityDao().assignUserToCommunity(userId, communityId);
 	}
 
 	/**
@@ -136,9 +174,11 @@ public class CommunityService {
 	 *            - id of {@link Community} in {@link String} format
 	 * @return boolean values is operation success
 	 */
-	public static boolean assignUserToCommunity(String userName, String communityId) {
+	public boolean assignUserToCommunity(String userName, String communityId) {
 		boolean res = false;
-		User user = UserService.getUserByLogin(userName);
+		if(userName==null)
+			return res;
+		User user = getUserService().getUserByLogin(userName);
 		if (user == null)
 			return res;
 		try {
@@ -159,13 +199,13 @@ public class CommunityService {
 	 *            - id of {@link Community} in {@link String} format
 	 * @return boolean values is operation success
 	 */
-	public static boolean assignTestToCommunity(String testId, String communityId) {
+	public  boolean assignCategoryToCommunity(String testId, String communityId) {
 		boolean res = false;
 
 		try {
 			int testIdInt = Integer.parseInt(testId);
 			int communityIdInt = Integer.parseInt(communityId);
-			res = assignTestToCommunity(testIdInt, communityIdInt);
+			res = assignCategoryToCommunity(testIdInt, communityIdInt);
 		} catch (NumberFormatException e) {
 			return res;
 		}
@@ -181,12 +221,10 @@ public class CommunityService {
 	 *            - id of {@link Community} in int format
 	 * @return boolean values is operation success
 	 */
-	private static boolean assignTestToCommunity(int testId, int communityId) {
-		if (testId < 1 && communityId < 1)
+	private  boolean assignCategoryToCommunity(int testId, int communityId) {
+		if (testId < 1 || communityId < 1)
 			return false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICommunityDao communityDao = daoFactory.getCommunityDao();
-		return communityDao.assignTestToCommunity(testId, communityId);
+		return getCommunityDao().assignCategoryToCommunity(testId, communityId);
 	}
 
 	/**
@@ -197,12 +235,18 @@ public class CommunityService {
 	 *            - collection of {@link Community}
 	 * @return collection of unique {@link Test}
 	 */
-	public static List<Test> getUniqueTestsFromCommunityList(List<Community> communities) {
+	public List<Test> getUniqueTestsFromCommunityList(List<Community> communities) {
 		Set<Test> tests = new HashSet<>();
 		for (Community community : communities) {
-			if (community.getTests() != null)
-				tests.addAll(community.getTests());
+			if (community.getCategories() != null) {
+				for (Category category : community.getCategories()) {
+					if (category.getTests() != null)
+						tests.addAll(category.getTests());
+				}
+			}
+
 		}
 		return new ArrayList<Test>(tests);
 	}
+
 }

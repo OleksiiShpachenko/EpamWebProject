@@ -39,13 +39,13 @@ public class CommandTakeTestStart implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		int testId = 0;
 		try {
 			testId = Integer.parseInt(request.getParameter("testId"));
@@ -54,7 +54,7 @@ public class CommandTakeTestStart implements ICommand {
 		} catch (NumberFormatException ex) {
 			return Config.getInstance().getProperty(Config.ERROR);
 		}
-		Test test = TestService.getTestByIdWhithQuestionsAndAnswers(testId);
+		Test test = TestService.getInstance().getTestByIdWhithQuestionsAndAnswers(testId);
 		Task task = new Task();
 		task.setUserId(user.getUserId());
 		task.setUser(user);

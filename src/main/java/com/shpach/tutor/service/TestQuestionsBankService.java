@@ -1,5 +1,6 @@
 package com.shpach.tutor.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.shpach.tutor.persistance.entities.Question;
@@ -17,6 +18,21 @@ import com.shpach.tutor.persistance.jdbc.dao.testquestionbank.ITestQuestionsBank
  */
 public class TestQuestionsBankService {
 
+	private static TestQuestionsBankService instance;
+	private ITestQuestionsBankDao testQuestionsBankDao;
+	private TestService testService;
+	private QuestionService questionService;
+
+	private TestQuestionsBankService() {
+	}
+
+	public static TestQuestionsBankService getInstance() {
+		if (instance == null) {
+			instance = new TestQuestionsBankService();
+		}
+		return instance;
+	}
+
 	/**
 	 * Gets collection of {@link TestQuestionsBank} with {@link Test} from
 	 * database by {@link Question}
@@ -25,14 +41,23 @@ public class TestQuestionsBankService {
 	 *            - {@link Question}
 	 * @return collection of {@link TestQuestionsBank}
 	 */
-	public static List<TestQuestionsBank> getTestQuestionsBankWithTestInfoByQuestion(Question question) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestQuestionsBankDao testQuestionsBankDao = daoFactory.getTestQuestionsBankDao();
-		List<TestQuestionsBank> testQuestionsBanks = testQuestionsBankDao
-				.findTestQuestionsBankByQuestionId(question.getQuestionId());
-		if (testQuestionsBanks != null)
-			insertTestInfoToTestQuestionsBanks(testQuestionsBanks);
+	public List<TestQuestionsBank> getTestQuestionsBankWithTestInfoByQuestion(Question question) {
+		List<TestQuestionsBank> testQuestionsBanks = new ArrayList<>();
+		if (question == null)
+			return testQuestionsBanks;
+		testQuestionsBanks = getTestQuestionsBankDao().findTestQuestionsBankByQuestionId(question.getQuestionId());
+		if (testQuestionsBanks == null)
+			return new ArrayList<TestQuestionsBank>();
+		insertTestInfoToTestQuestionsBanks(testQuestionsBanks);
 		return testQuestionsBanks;
+	}
+
+	private ITestQuestionsBankDao getTestQuestionsBankDao() {
+		if (testQuestionsBankDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			testQuestionsBankDao = daoFactory.getTestQuestionsBankDao();
+		}
+		return testQuestionsBankDao;
 	}
 
 	/**
@@ -41,14 +66,18 @@ public class TestQuestionsBankService {
 	 * @param testQuestionsBanks
 	 *            - collection of {@link TestQuestionsBank}
 	 */
-	private static void insertTestInfoToTestQuestionsBanks(List<TestQuestionsBank> testQuestionsBanks) {
-		if (testQuestionsBanks == null)
-			return;
+	private void insertTestInfoToTestQuestionsBanks(List<TestQuestionsBank> testQuestionsBanks) {
 		for (TestQuestionsBank testQuestionsBank : testQuestionsBanks) {
-			Test test = TestService.getTestById(testQuestionsBank.getTestId());
+			Test test = getTestService().getTestById(testQuestionsBank.getTestId());
 			testQuestionsBank.setTest(test);
 		}
 
+	}
+
+	private TestService getTestService() {
+		if (testService == null)
+			testService = TestService.getInstance();
+		return testService;
 	}
 
 	/**
@@ -60,7 +89,7 @@ public class TestQuestionsBankService {
 	 *            - id of {@link Question} in {@link String} format
 	 * @return
 	 */
-	public static boolean assignTestToQuestion(String testId, String questionId) {
+	public boolean assignTestToQuestion(String testId, String questionId) {
 		boolean res = false;
 
 		try {
@@ -82,17 +111,16 @@ public class TestQuestionsBankService {
 	 *            - id of {@link Question} in int format
 	 * @return
 	 */
-	public static boolean assignTestToQuestion(int testId, int questionId) {
-		if (testId < 1 && questionId < 1)
+	public boolean assignTestToQuestion(int testId, int questionId) {
+		if (testId < 1 || questionId < 1)
 			return false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestQuestionsBankDao testQuestionsBankDao = daoFactory.getTestQuestionsBankDao();
 		TestQuestionsBank testQuestionsBank = new TestQuestionsBank();
 		testQuestionsBank.setTestId(testId);
 		testQuestionsBank.setQuestionId(questionId);
-		int questionDefaultSortingOrder = testQuestionsBankDao.findMaxquestionDefaultSortingOrderByTestId(testId) + 100;
+		int questionDefaultSortingOrder = getTestQuestionsBankDao()
+				.findMaxquestionDefaultSortingOrderByTestId(testQuestionsBank.getTestId()) + 100;
 		testQuestionsBank.setQuestionDefaultSortingOrder(questionDefaultSortingOrder);
-		TestQuestionsBank testQuestionsBankReturned = testQuestionsBankDao.addOrUpdate(testQuestionsBank);
+		TestQuestionsBank testQuestionsBankReturned = getTestQuestionsBankDao().addOrUpdate(testQuestionsBank);
 		if (testQuestionsBankReturned == null)
 			return false;
 		return true;
@@ -106,10 +134,11 @@ public class TestQuestionsBankService {
 	 *            id of {@link Test}
 	 * @return
 	 */
-	public static List<TestQuestionsBank> getTestQuestionsBankWithQuestionsByTestId(int testId) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestQuestionsBankDao testQuestionsBankDao = daoFactory.getTestQuestionsBankDao();
-		List<TestQuestionsBank> testQuestionsBanks = testQuestionsBankDao.findTestQuestionsBankByTestId(testId);
+	public List<TestQuestionsBank> getTestQuestionsBankWithQuestionsByTestId(int testId) {
+
+		List<TestQuestionsBank> testQuestionsBanks = getTestQuestionsBankDao().findTestQuestionsBankByTestId(testId);
+		if (testQuestionsBanks == null)
+			return new ArrayList<TestQuestionsBank>();
 		insertQuestionsWithAnswerToTestQuestionsBankList(testQuestionsBanks);
 		return testQuestionsBanks;
 	}
@@ -121,11 +150,18 @@ public class TestQuestionsBankService {
 	 * @param testQuestionsBanks
 	 *            - collection of {@link TestQuestionsBank}
 	 */
-	private static void insertQuestionsWithAnswerToTestQuestionsBankList(List<TestQuestionsBank> testQuestionsBanks) {
+	private void insertQuestionsWithAnswerToTestQuestionsBankList(List<TestQuestionsBank> testQuestionsBanks) {
 		for (TestQuestionsBank testQuestionsBank : testQuestionsBanks) {
-			Question question = QuestionService.getQuestionByIdWithAnswers(testQuestionsBank.getQuestionId());
+			Question question = getQuestionService().getQuestionByIdWithAnswers(testQuestionsBank.getQuestionId());
 			testQuestionsBank.setQuestion(question);
 		}
 
 	}
+
+	private QuestionService getQuestionService() {
+		if (questionService == null)
+			questionService = QuestionService.getInstance();
+		return questionService;
+	}
+
 }

@@ -32,9 +32,10 @@ public class StudentCommunityAverageStatisticTag extends TagSupport {
 	public int doStartTag() throws JspException {
 		String res = "not Assigned";
 
-		OptionalDouble count = community.getTests().stream()
-				.filter(c -> (c.getTasks() != null && c.getTasks().size() > 0))
-				.mapToInt(c -> TaskService.CalculateAverageScore(c.getTasks())).average();
+		OptionalDouble count =null; //TODO change insertParam to Category
+//		community.getTests().stream()
+//				.filter(c -> (c.getTasks() != null && c.getTasks().size() > 0))
+//				.mapToInt(c -> TaskService.CalculateAverageScore(c.getTasks())).average();
 
 		if (count.isPresent()) {
 			res = Integer.toString((int) count.getAsDouble()) + "%";

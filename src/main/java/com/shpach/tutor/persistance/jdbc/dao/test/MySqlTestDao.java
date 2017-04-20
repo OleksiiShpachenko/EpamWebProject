@@ -2,13 +2,13 @@ package com.shpach.tutor.persistance.jdbc.dao.test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.Test;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
 
 public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 	private static final Logger logger = Logger.getLogger(MySqlTestDao.class);
@@ -65,7 +65,7 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 			+ " FROM " + TABLE_NAME + ", " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + " WHERE "
 			+ TABLE_TEST_TO_CATEGORY_RELATIONSHIP + ".category_id=? AND " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + "."
 			+ Columns.test_id.name() + "=" + TABLE_NAME + "." + Columns.test_id.name();
-	
+
 	private static MySqlTestDao instance = null;
 
 	private MySqlTestDao() {
@@ -79,15 +79,9 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 			return instance;
 
 	}
-	
-	public List<Test> findtAll() {
-		List<Test> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+
+	public List<Test> findAll() {
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public Test addOrUpdate(Test test) {
@@ -105,20 +99,16 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 
 	public Test findTestById(int id) {
 		List<Test> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.test_id.name(), id);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.test_id.name(), id);
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
-	public List<Test> findTestByCommunityId(int id) {
-		String sql = SQL_SELECT_BY_COMMUNITY_ID;
-		return getTestByRelationshiId(sql, id);
-	}
+	// public List<Test> findTestByCommunityId(int id) {
+	// String sql = SQL_SELECT_BY_COMMUNITY_ID;
+	// return getTestByRelationshiId(sql, id);
+	// }
 
 	public List<Test> findTestByCategoryId(int id) {
 		String sql = SQL_SELECT_BY_CATEGORY_ID;
@@ -126,16 +116,11 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 	}
 
 	protected List<Test> getTestByRelationshiId(String sql, int id) {
-
 		List<Test> res = null;
-		try {
-			res = findByDynamicSelect(sql, new Integer[] { id });
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(sql, new Integer[] { id });
 		if (res != null && res.size() > 0)
 			return res;
-		return null;
+		return new ArrayList<Test>();
 	}
 
 	private boolean update(Test test) {
@@ -158,7 +143,7 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 	}
 
 	@Override
-	protected Test populateDto(ResultSet rs) throws SQLException {
+	public Test populateDto(ResultSet rs) throws SQLException {
 		Test dto = new Test();
 		dto.setTestId(rs.getInt(Columns.test_id.getId()));
 		dto.setUserId(rs.getInt(Columns.user_id.getId()));
@@ -173,12 +158,10 @@ public class MySqlTestDao extends AbstractDao<Test> implements ITestDao {
 
 	public List<Test> findTestByUserId(int id) {
 		List<Test> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), id);
+		if (res != null && res.size() > 0)
+			return res;
+		return new ArrayList<Test>();
 	}
 
 }

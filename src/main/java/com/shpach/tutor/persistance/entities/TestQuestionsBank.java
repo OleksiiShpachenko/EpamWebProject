@@ -82,4 +82,35 @@ public class TestQuestionsBank implements Serializable {
 		this.questionId = id;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + questionDefaultSortingOrder;
+		result = prime * result + questionId;
+		result = prime * result + testId;
+		result = prime * result + testQuestionsBankId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TestQuestionsBank other = (TestQuestionsBank) obj;
+		if (questionDefaultSortingOrder != other.questionDefaultSortingOrder)
+			return false;
+		if (questionId != other.questionId)
+			return false;
+		if (testId != other.testId)
+			return false;
+		if (testQuestionsBankId != other.testQuestionsBankId)
+			return false;
+		return true;
+	}
+
 }

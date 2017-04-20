@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.shpach.tutor.manager.Config;
 import com.shpach.tutor.persistance.entities.User;
 import com.shpach.tutor.service.UserService;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.Pattern;
 
 /**
  * Command which register new user in the system
@@ -24,7 +25,7 @@ public class CommandRegistration implements ICommand {
 	public String execute(HttpServletRequest request, HttpServletResponse responce)
 			throws ServletException, IOException {
 		String page = Config.getInstance().getProperty(Config.REGISTRATION);
-
+	
 		String userName = request.getParameter("userName");
 		if (userName != null) {
 			String userEmail = request.getParameter("userEmail");
@@ -40,7 +41,7 @@ public class CommandRegistration implements ICommand {
 			} catch (NumberFormatException ex) {
 				validation = false;
 			}
-			if (userName.equals("")) {
+			if (userName.equals("") || !UserService.test(userName) ) {
 				request.setAttribute("fillUserNameMessage", true);
 				validation = false;
 			}
@@ -58,7 +59,7 @@ public class CommandRegistration implements ICommand {
 				user.setUserName(userName);
 				user.setUserPassword(userPassword);
 				user.setRoleId(userRoleInt);
-				if (UserService.addNewUser(user)) {
+				if (UserService.getInstance().addNewUser(user)) {
 					logger.info("new user succefull added. User email:" + userEmail);
 					request.setAttribute("registrationSuccess", true);
 					page = Config.getInstance().getProperty(Config.LOGIN);
@@ -69,5 +70,5 @@ public class CommandRegistration implements ICommand {
 		}
 		return page;
 	}
-
+	
 }

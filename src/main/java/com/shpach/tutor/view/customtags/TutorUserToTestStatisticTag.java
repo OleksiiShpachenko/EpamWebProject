@@ -50,10 +50,10 @@ public class TutorUserToTestStatisticTag extends TagSupport {
 
 		String res = "";
 
-		Test test = community.getTests().stream().filter(c -> c.getTestId() == testId).findFirst().get();
+		Test test =null; //TODO change insertParam to Category// community.getCategories().forEach(c->c.getTests().stream().filter(c -> c.getTestId() == testId).findFirst().get();
 		List<Task> tasks = test.getTasks().stream().filter(c -> c.getUserId() == userId).collect(Collectors.toList());
 
-		int average = TaskService.CalculateAverageScore(tasks);
+		int average = TaskService.getInstance().CalculateAverageScore(tasks);
 		if (average == TaskService.EXLUDABLE_AVERAGE)
 			res = "Not passed";
 		else

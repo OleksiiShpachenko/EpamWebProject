@@ -11,8 +11,9 @@ import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.Task;
 import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
+import com.shpach.tutor.persistance.jdbc.connection.ConnectionPoolTomCatFactory;
+import com.shpach.tutor.persistance.jdbc.connection.IConnectionPoolFactory;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-
 
 public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 	private static final Logger logger = Logger.getLogger(MySqlTaskDao.class);
@@ -69,13 +70,13 @@ public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 			return instance;
 
 	}
-	
+
 	@Override
-	protected Task populateDto(ResultSet rs) throws SQLException {
+	public Task populateDto(ResultSet rs) throws SQLException {
 		Task dto = new Task();
 		dto.setTaskId(rs.getInt(Columns.task_id.getId()));
 		dto.setUserId(rs.getInt(Columns.user_id.getId()));
-		// dto.setTestId(rs.getString(Columns.test_id.getId()));
+		dto.setTestId(rs.getInt(Columns.test_id.getId()));
 		dto.setTaskDatetimeStart(new Date(rs.getTimestamp(Columns.task_datetime_start.getId()).getTime()));
 		dto.setTaskDatetimeStop(new Date(rs.getTimestamp(Columns.task_datetime_stop.getId()).getTime()));
 		dto.setTaskScore(rs.getByte(Columns.task_score.getId()));
@@ -85,11 +86,13 @@ public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 
 	@Override
 	public Task addOrUpdate(Task task) {
-		//ConnectionPool pool = ConnectionPool.getInstance();
+		// ConnectionPool pool = ConnectionPool.getInstance();
 		Connection cn = null;
 		Task taskNew = null;
 		try {
-			cn =ConnectionPool.getConnection();// pool.getConnection();
+			// cn =ConnectionPool.getConnection();// pool.getConnection();
+			IConnectionPoolFactory connectionFactory = (IConnectionPoolFactory) new ConnectionPoolTomCatFactory();
+			cn = connectionFactory.getConnection();
 			cn.setAutoCommit(false);
 			taskNew = addOrUpdate(task, cn);
 			cn.setAutoCommit(true);
@@ -114,68 +117,86 @@ public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 	}
 
 	private boolean update(Task task, Connection connection) {
-		try {
-			PreparedStatement st = null;
-			try {
-				String SQL = SQL_UPDATE;
-				st = connection.prepareStatement(SQL);
-				st.setInt(1, task.getUser().getUserId());
-				st.setInt(2, task.getTest().getTestId());
-				st.setTimestamp(3, new java.sql.Timestamp(task.getTaskDatetimeStart().getTime()));
-				st.setTimestamp(4, new java.sql.Timestamp(task.getTaskDatetimeStop().getTime()));
-				st.setByte(5, task.getTaskScore());
-				st.setInt(6, task.getTaskCategoryId());
-				st.setInt(7, task.getTaskId());
-				st.executeUpdate();
-				return true;
-			} finally {
-				if (st != null) {
-					st.close();
-				}
-			}
-		} catch (SQLException e) {
-			logger.error(e, e);
-			return false;
-		}
+		Object[] sqlParams = new Object[] { task.getUser().getUserId(), task.getTest().getTestId(),
+				new java.sql.Timestamp(task.getTaskDatetimeStart().getTime()),
+				new java.sql.Timestamp(task.getTaskDatetimeStop().getTime()), task.getTaskScore(),
+				task.getTaskCategoryId(), task.getTaskId() };
+		return  dynamicUpdate(SQL_INSERT, connection, sqlParams);
+		
+//		try {
+//			PreparedStatement st = null;
+//			try {
+//				String SQL = SQL_UPDATE;
+//				st = connection.prepareStatement(SQL);
+//				st.setInt(1, task.getUser().getUserId());
+//				st.setInt(2, task.getTest().getTestId());
+//				st.setTimestamp(3, new java.sql.Timestamp(task.getTaskDatetimeStart().getTime()));
+//				st.setTimestamp(4, new java.sql.Timestamp(task.getTaskDatetimeStop().getTime()));
+//				st.setByte(5, task.getTaskScore());
+//				st.setInt(6, task.getTaskCategoryId());
+//				st.setInt(7, task.getTaskId());
+//				st.executeUpdate();
+//				return true;
+//			} finally {
+//				if (st != null) {
+//					st.close();
+//				}
+//			}
+//		} catch (SQLException e) {
+//			logger.error(e, e);
+//			return false;
+//		}
 	}
 
 	private boolean add(Task task, Connection connection) {
-		try {
-			PreparedStatement st = null;
-			try {
-				String SQL = SQL_INSERT;
-				st = connection.prepareStatement(SQL);
-				st.setInt(1, task.getUser().getUserId());
-				st.setInt(2, task.getTest().getTestId());
-				st.setTimestamp(3, new java.sql.Timestamp(task.getTaskDatetimeStart().getTime()));
-				st.setTimestamp(4, new java.sql.Timestamp(task.getTaskDatetimeStop().getTime()));
-				st.setByte(5, task.getTaskScore());
-				st.setInt(6, task.getTaskCategoryId());
-				st.executeUpdate();
-				st.close();
-				st = connection.prepareStatement("SELECT last_insert_id()");
-				ResultSet rs = null;
-				try {
-					rs = st.executeQuery();
-					while (rs.next()) {
-						task.setTaskId(rs.getInt(1));
-					}
-				} finally {
-					if (rs != null) {
-						rs.close();
-					}
-				}
-				return true;
-			} finally {
-				if (st != null) {
-					st.close();
-				}
-			}
-
-		} catch (SQLException e) {
-			logger.error(e, e);
-			return false;
+		Object[] sqlParams = new Object[] { task.getUser().getUserId(), task.getTest().getTestId(),
+				new java.sql.Timestamp(task.getTaskDatetimeStart().getTime()),
+				new java.sql.Timestamp(task.getTaskDatetimeStop().getTime()), task.getTaskScore(),
+				task.getTaskCategoryId() };
+		int id = dynamicAdd(SQL_INSERT, connection, sqlParams);
+		if (id > 0) {
+			task.setTaskId(id);
+			return true;
 		}
+		return false;
+		// try {
+		// PreparedStatement st = null;
+		// try {
+		// String SQL = SQL_INSERT;
+		// st = connection.prepareStatement(SQL);
+		// st.setInt(1, task.getUser().getUserId());
+		// st.setInt(2, task.getTest().getTestId());
+		// st.setTimestamp(3, new
+		// java.sql.Timestamp(task.getTaskDatetimeStart().getTime()));
+		// st.setTimestamp(4, new
+		// java.sql.Timestamp(task.getTaskDatetimeStop().getTime()));
+		// st.setByte(5, task.getTaskScore());
+		// st.setInt(6, task.getTaskCategoryId());
+		// st.executeUpdate();
+		// st.close();
+		// st = connection.prepareStatement("SELECT last_insert_id()");
+		// ResultSet rs = null;
+		// try {
+		// rs = st.executeQuery();
+		// while (rs.next()) {
+		// task.setTaskId(rs.getInt(1));
+		// }
+		// } finally {
+		// if (rs != null) {
+		// rs.close();
+		// }
+		// }
+		// return true;
+		// } finally {
+		// if (st != null) {
+		// st.close();
+		// }
+		// }
+		//
+		// } catch (SQLException e) {
+		// logger.error(e, e);
+		// return false;
+		// }
 	}
 
 	@Override
@@ -197,5 +218,27 @@ public class MySqlTaskDao extends AbstractDao<Task> implements ITaskDao {
 			logger.error(e, e);
 			return null;
 		}
+	}
+
+	@Override
+	public List<Task> findTaskByUserId(int userId) {
+		try {
+			return findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), userId);
+		} catch (Exception e) {
+			logger.error(e, e);
+			return null;
+		}
+
+	}
+
+	@Override
+	public List<Task> findAllTasks() {
+		List<Task> res = null;
+		try {
+			res = findByDynamicSelect(SQL_SELECT, null, null);
+		} catch (Exception e) {
+			logger.error(e, e);
+		}
+		return res;
 	}
 }

@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.UsersRole;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.user.MySqlUserDao;
 
 public class MySqlUserRoleDao extends AbstractDao<UsersRole> implements IUserRoleDao {
 	private static final Logger logger = Logger.getLogger(MySqlUserRoleDao.class);
@@ -55,16 +54,12 @@ public class MySqlUserRoleDao extends AbstractDao<UsersRole> implements IUserRol
 	}
 
 	public List<UsersRole> findAll() {
-		List<UsersRole> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public UsersRole addOrUpdate(UsersRole usersRole) {
+		if (usersRole==null)
+			return null;
 		boolean res = false;
 		if (usersRole.getRoleId() == 0) {
 			res = add(usersRole);
@@ -94,17 +89,13 @@ public class MySqlUserRoleDao extends AbstractDao<UsersRole> implements IUserRol
 
 	public UsersRole findUsersRoleById(int id) {
 		List<UsersRole> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.role_id.name(), id);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.role_id.name(), id);
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
-	protected UsersRole populateDto(ResultSet rs) throws SQLException {
+	public UsersRole populateDto(ResultSet rs) throws SQLException {
 		UsersRole dto = new UsersRole();
 		dto.setRoleId(rs.getInt(Columns.role_id.getId()));
 		dto.setRoleName(rs.getString(Columns.role_name.getId()));

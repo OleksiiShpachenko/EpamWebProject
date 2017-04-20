@@ -36,18 +36,18 @@ public class CommandNewQuestion implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		String questionName = request.getParameter("questionName");
 		String questionText = request.getParameter("questionText");
 		String[] questionAnswers = request.getParameterValues("questionAnswer[]");
 		String[] questionAnswerCorrect = request.getParameterValues("correct[]");
-		boolean isOk = QuestionService.addNewQuestion(questionName, questionText, questionAnswers,
+		boolean isOk = QuestionService.getInstance().addNewQuestion(questionName, questionText, questionAnswers,
 				questionAnswerCorrect, user);
 		request.setAttribute("addQuestionStatus", isOk);
 		page = "/pages";

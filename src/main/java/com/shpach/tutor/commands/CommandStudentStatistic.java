@@ -44,24 +44,24 @@ public class CommandStudentStatistic implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		Map<String, String[]> lastRequest = new HashMap<String, String[]>();
 		lastRequest.putAll(request.getParameterMap());
 		request.getSession().setAttribute("lastRequest", lastRequest);
 
 		List<UserMenuItem> studentMenu = new MenuStrategy(user).getMenu();
-		UserMenuService.setActiveMenuByCommand(studentMenu, "studentStatistic");
+		UserMenuService.getInstance().setActiveMenuByCommand(studentMenu, "studentStatistic");
 		request.setAttribute("menu", studentMenu);
 
-		List<Community> communities = CommunityService.getCommunitiesByUserWithTestsAndUsers(user);
-		List<Test> tests = CommunityService.getUniqueTestsFromCommunityList(communities);
-		communities.forEach(c -> TaskService.insertTasksToTestsListByUser(c.getTests(), user));
+		List<Community> communities = CommunityService.getInstance().getCommunitiesByUserWithCategoriesAndUsers(user);
+		List<Test> tests = CommunityService.getInstance().getUniqueTestsFromCommunityList(communities);
+		communities.forEach(c -> c.getCategories().forEach(j-> TaskService.getInstance().insertTasksToTestsListByUser(j.getTests(), user)));
 		request.setAttribute("communities", communities);
 		request.setAttribute("tests", tests);
 

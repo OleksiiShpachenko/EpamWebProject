@@ -42,13 +42,13 @@ public class CommandStudentTests implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 
 		Map<String, String[]> lastRequest = new HashMap<String, String[]>();
 		lastRequest.putAll(request.getParameterMap());
@@ -56,12 +56,12 @@ public class CommandStudentTests implements ICommand {
 		request.getSession().setAttribute("lastRequest", lastRequest);
 
 		List<UserMenuItem> studentMenu = new MenuStrategy(user).getMenu();
-		UserMenuService.setActiveMenuByCommand(studentMenu, "studentTests");
+		UserMenuService.getInstance().setActiveMenuByCommand(studentMenu, "studentTests");
 		request.setAttribute("menu", studentMenu);
 
-		List<Test> tests = TestService.getTestsByStudentUser(user);
+		List<Test> tests = TestService.getInstance().getTestsByStudentUser(user);
 		TestService.insertStudentsCommunitiesToTests(tests);
-		TestService.insertCategoriesToTests(tests);
+		TestService.getInstance().insertCategoriesToTests(tests);
 		request.setAttribute("tests", tests);
 		page = Config.getInstance().getProperty(Config.STUDENT_TESTS);
 		return page;

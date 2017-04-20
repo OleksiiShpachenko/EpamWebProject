@@ -7,48 +7,48 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * The persistent class for the task database table.
  * 
  */
 @Entity
-@NamedQuery(name="Task.findAll", query="SELECT t FROM Task t")
+@NamedQuery(name = "Task.findAll", query = "SELECT t FROM Task t")
 public class Task implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name="task_id")
+	@Column(name = "task_id")
 	private int taskId;
 
-	@Column(name="task_category_id")
+	@Column(name = "task_category_id")
 	private int taskCategoryId;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="task_datetime_start")
+	@Column(name = "task_datetime_start")
 	private Date taskDatetimeStart;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="task_datetime_stop")
+	@Column(name = "task_datetime_stop")
 	private Date taskDatetimeStop;
 
-	@Column(name="task_score")
+	@Column(name = "task_score")
 	private byte taskScore;
 
-	//bi-directional many-to-one association to QuestionLog
-	@OneToMany(mappedBy="task")
+	// bi-directional many-to-one association to QuestionLog
+	@OneToMany(mappedBy = "task")
 	private List<QuestionLog> questionLogs;
 
-	//bi-directional many-to-one association to User
+	// bi-directional many-to-one association to User
 	@ManyToOne
-	@JoinColumn(name="user_id")
+	@JoinColumn(name = "user_id")
 	private int userId;
 	private User user;
 
-	//bi-directional many-to-one association to Test
+	// bi-directional many-to-one association to Test
 	@ManyToOne
-	@JoinColumn(name="test_id")
+	@JoinColumn(name = "test_id")
 	private Test test;
+	private int testId;
 
 	public Task() {
 	}
@@ -102,7 +102,7 @@ public class Task implements Serializable {
 	}
 
 	public QuestionLog addQuestionLog(QuestionLog questionLog) {
-		if (getQuestionLogs()==null)
+		if (getQuestionLogs() == null)
 			questionLogs = new ArrayList<>();
 		getQuestionLogs().add(questionLog);
 		questionLog.setTask(this);
@@ -140,6 +140,14 @@ public class Task implements Serializable {
 
 	public void setTest(Test test) {
 		this.test = test;
+	}
+
+	public int getTestId() {
+		return testId;
+	}
+
+	public void setTestId(int testId) {
+		this.testId = testId;
 	}
 
 }

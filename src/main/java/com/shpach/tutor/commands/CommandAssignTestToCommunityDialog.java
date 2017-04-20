@@ -39,17 +39,17 @@ public class CommandAssignTestToCommunityDialog implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 
-		List<Test> tests = TestService.getTestsByUsers(user);
-		TestService.insertCommunitiesToTests(tests);
-		TestService.insertCategoriesToTests(tests);
+		List<Test> tests = TestService.getInstance().getTestsByUsers(user);
+		//TestService.getInstance().insertCommunitiesToTests(tests);
+		TestService.getInstance().insertCategoriesToTests(tests);
 		request.setAttribute("tests", tests);
 		request.setAttribute("assignTestToCommunityDialog", true);
 		request.setAttribute("communityId", request.getParameter("communityId"));

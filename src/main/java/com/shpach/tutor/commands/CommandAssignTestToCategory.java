@@ -34,7 +34,7 @@ public class CommandAssignTestToCategory implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
@@ -44,7 +44,7 @@ public class CommandAssignTestToCategory implements ICommand {
 		String categoryId = request.getParameter("categoryId");
 		String testId = request.getParameter("testId");
 
-		boolean isOk = CategoryService.assignTestToCategory(testId, categoryId);
+		boolean isOk = CategoryService.getInstance().assignTestToCategory(testId, categoryId);
 		request.setAttribute("assignTestToCategoryStatus", isOk);
 
 		page = "/pages";

@@ -39,13 +39,14 @@ public class CommandLogin implements ICommand {
 		HttpSession session = request.getSession(false);
 
 		if (session != null)
-			checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+			checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			String login = request.getParameter(LOGIN);
 			String password = request.getParameter(PASSWORD);
-			boolean checkLogin = LoginService.checkLogin(login, password);
+			boolean checkLogin = LoginService.getInstance().checkLogin(login, password);
 			if (!checkLogin) {
-				session.invalidate();
+				//request.getSession().setAttribute("javax.servlet.jsp.jstl.fmt.locale.session", locale);
+				//session.invalidate();
 				request.setAttribute("errorLoginPassMessage", Message.getInstance().getProperty(Message.LOGIN_ERROR));
 				return page = Config.getInstance().getProperty(Config.LOGIN);
 			}
@@ -53,10 +54,10 @@ public class CommandLogin implements ICommand {
 			logger.info("the user " + login + " succefully logged in");
 
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		request.getSession().setAttribute("userEntity", user);
 		request.getSession().setAttribute("userName", user.getUserName());
-		UsersRole usersRole = UserRoleService.getUserRoleById(user.getRoleId());
+		UsersRole usersRole = UserRoleService.getInstance().getUserRoleById(user.getRoleId());
 		request.getSession().setAttribute("usersRole", usersRole);
 
 		Map<String, String[]> lastRequest = new HashMap<String, String[]>();

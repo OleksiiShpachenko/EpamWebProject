@@ -27,18 +27,18 @@ public class Community implements Serializable {
 	@Column(name="community_name")
 	private String communityName;
 
-	//bi-directional many-to-many association to Test
+	//bi-directional many-to-many association to Category
 	@ManyToMany
 	@JoinTable(
-		name="test_to_community_relationship"
+		name="category_to_community_relationship"
 		, joinColumns={
 			@JoinColumn(name="community_id")
 			}
 		, inverseJoinColumns={
-			@JoinColumn(name="test_id")
+			@JoinColumn(name="category_id")
 			}
 		)
-	private List<Test> tests;
+	private List<Category> categories;
 
 	//bi-directional many-to-many association to User
 	@ManyToMany
@@ -88,12 +88,12 @@ public class Community implements Serializable {
 		this.communityName = communityName;
 	}
 
-	public List<Test> getTests() {
-		return this.tests;
+	public List<Category> getCategories() {
+		return this.categories;
 	}
 
-	public void setTests(List<Test> tests) {
-		this.tests = tests;
+	public void setCategories(List<Category> categories) {
+		this.categories = categories;
 	}
 
 	public List<User> getUsers() {

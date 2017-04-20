@@ -1,83 +1,82 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.naming.NamingException;
 
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.shpach.tutor.persistance.entities.UsersRole;
-import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
 import com.shpach.tutor.persistance.jdbc.dao.factory.IDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.userrole.IUserRoleDao;
+import com.shpach.tutor.persistance.jdbc.dao.userrole.MySqlUserRoleDao;
 
-@PowerMockIgnore("javax.management.*")
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(ConnectionPool.class)
-public class UserRoleDaoTest {
-	private Connection mockConnection;
-	private PreparedStatement mockPreparedStmnt;
-	private ResultSet mockResultSet;
+
+public class UserRoleDaoTest extends DaoTest {
+	private IUserRoleDao userRoleDao;
+	private MySqlUserRoleDao spyUserRoleDao;
 
 	@Before
-	public void init() {
-		mockConnection = Mockito.mock(Connection.class);
-		mockPreparedStmnt = Mockito.mock(PreparedStatement.class);
-		mockResultSet = Mockito.mock(ResultSet.class);
+	public void init() throws SQLException {
+		super.init();
+		IDaoFactory daoFactory = new MySqlDaoFactory();
+		userRoleDao = daoFactory.getUserRoleDao();
+		spyUserRoleDao =  (MySqlUserRoleDao)spy(userRoleDao);
 	}
 
 	@Test
+	public void findAllTest() throws Exception{
+		List<UsersRole> expecteds=new ArrayList<>(Arrays.asList(new UsersRole(), new UsersRole())) ;
+		
+		doReturn(expecteds).when(spyUserRoleDao).findByDynamicSelect(anyString(), anyString(),anyObject());
+		
+		List<UsersRole> actuals=spyUserRoleDao.findAll();
+		
+		verify(spyUserRoleDao, times(1)).findByDynamicSelect(anyString(), anyString(),anyObject());
+	
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
+	}
+	
+	@Test
 	public void findUserRoleByIdTestExistingId() throws SQLException, NamingException {
+		List<UsersRole> expecteds=new ArrayList<>();
 		int roleId = 1;
 		String roleDescription = "Description";
 		String roleName = "Tutor";
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(roleId);
-		when(mockResultSet.getString(anyInt())).thenReturn(roleName, roleDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		expecteds.add(userRoleExpected);
+		
+		doReturn(expecteds).when(spyUserRoleDao).findByDynamicSelect(anyString(), anyString(),anyObject());
 
-		UsersRole userRole = new UsersRole();
-		userRole.setRoleId(roleId);
-		userRole.setRoleName(roleName);
-		userRole.setRoleDescription(roleDescription);
+		UsersRole usersRoleActual = spyUserRoleDao.findUsersRoleById(roleId);
+		
+		verify(spyUserRoleDao, times(1)).findByDynamicSelect(anyString(), anyString(),anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserRoleDao userRoleDao = daoFactory.getUserRoleDao();
-		UsersRole usersRoleExpected = userRoleDao.findUsersRoleById(roleId);
-
-		assertEquals(usersRoleExpected, userRole);
+		assertEquals(userRoleExpected,usersRoleActual);
 	}
 
 	@Test
 	public void findUserRoleByIdTestNoExistingId() throws SQLException, NamingException {
+		doReturn(new ArrayList<UsersRole>() ).when(spyUserRoleDao).findByDynamicSelect(anyString(), anyString(),anyObject());
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
+		UsersRole usersRoleActual = spyUserRoleDao.findUsersRoleById(1);
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserRoleDao userRoleDao = daoFactory.getUserRoleDao();
-		UsersRole usersRoleExpected = userRoleDao.findUsersRoleById(1);
-
-		assertNull(usersRoleExpected);
+		verify(spyUserRoleDao, times(1)).findByDynamicSelect(anyString(), anyString(),anyObject());
+		
+		assertNull(usersRoleActual);
 	}
 
 	@Test
@@ -87,22 +86,46 @@ public class UserRoleDaoTest {
 		String roleDescription = "Description";
 		String roleName = "Tutor";
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(roleId);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+		UsersRole usersRole = new UsersRole();
+		usersRole.setRoleName(roleName);
+		usersRole.setRoleDescription(roleDescription);
+		
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		
+		doReturn(roleId).when(spyUserRoleDao).dynamicAdd(anyString(), anyObject());
 
-		UsersRole userRole = new UsersRole();
-		userRole.setRoleName(roleName);
-		userRole.setRoleDescription(roleDescription);
+		UsersRole usersRoleActual = spyUserRoleDao.addOrUpdate(usersRole);
+		
+		verify(spyUserRoleDao, times(1)).dynamicAdd(anyString(), anyObject());
+		
+		assertEquals(userRoleExpected, usersRoleActual);
+	}
+	@Test
+	public void addOrApdateTestNewUserRoleFail() throws SQLException, NamingException {
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserRoleDao userRoleDao = daoFactory.getUserRoleDao();
-		UsersRole usersRoleExpected = userRoleDao.findUsersRoleById(roleId);
+		int roleId = 1;
+		String roleDescription = "Description";
+		String roleName = "Tutor";
 
-		assertEquals(usersRoleExpected.getRoleId(), roleId);
+		UsersRole usersRole = new UsersRole();
+		usersRole.setRoleName(roleName);
+		usersRole.setRoleDescription(roleDescription);
+		
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		
+		doReturn(0).when(spyUserRoleDao).dynamicAdd(anyString(), anyObject());
+
+		UsersRole usersRoleActual = spyUserRoleDao.addOrUpdate(usersRole);
+		
+		verify(spyUserRoleDao, times(1)).dynamicAdd(anyString(), anyObject());
+		
+		assertNull(usersRoleActual);
 	}
 
 	@Test
@@ -112,22 +135,78 @@ public class UserRoleDaoTest {
 		String roleDescription = "Description";
 		String roleName = "Tutor";
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		
+		doReturn(true).when(spyUserRoleDao).dynamicUpdate(anyString(), anyObject());
+
+		UsersRole usersRoleActual = spyUserRoleDao.addOrUpdate(userRoleExpected);
+		
+		verify(spyUserRoleDao, times(1)).dynamicUpdate(anyString(), anyObject());
+		
+		assertEquals(userRoleExpected, usersRoleActual);
+	}
+	@Test
+	public void addOrApdateTestUpdateUserRoleFail() throws SQLException, NamingException {
+
+		int roleId = 1;
+		String roleDescription = "Description";
+		String roleName = "Tutor";
+
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		
+		doReturn(false).when(spyUserRoleDao).dynamicUpdate(anyString(), anyObject());
+
+		UsersRole usersRoleActual = spyUserRoleDao.addOrUpdate(userRoleExpected);
+		
+		verify(spyUserRoleDao, times(1)).dynamicUpdate(anyString(), anyObject());
+		
+		assertNull(usersRoleActual);
+	}
+	@Test
+	public void addOrApdateTestNull() throws SQLException, NamingException {
+
+		UsersRole usersRoleActual = spyUserRoleDao.addOrUpdate(null);
+		
+		verify(spyUserRoleDao, times(0)).dynamicUpdate(anyString(), anyObject());
+		
+		assertNull(usersRoleActual);
+	}
+	@Test
+	public void populateDtoTest() throws SQLException{
+		int roleId = 1;
+		String roleDescription = "Description";
+		String roleName = "Tutor";
+		
+		UsersRole userRoleExpected = new UsersRole();
+		userRoleExpected.setRoleId(roleId);
+		userRoleExpected.setRoleName(roleName);
+		userRoleExpected.setRoleDescription(roleDescription);
+		
 		when(mockResultSet.getInt(anyInt())).thenReturn(roleId);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-
-		UsersRole userRole = new UsersRole();
-		userRole.setRoleId(roleId);
-		userRole.setRoleName(roleName);
-		userRole.setRoleDescription(roleDescription);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserRoleDao userRoleDao = daoFactory.getUserRoleDao();
-		UsersRole usersRoleExpected = userRoleDao.findUsersRoleById(roleId);
-
-		assertNotNull(usersRoleExpected);
+		when(mockResultSet.getString(anyInt())).thenReturn(roleName,roleDescription);
+		
+		UsersRole actual= spyUserRoleDao.populateDto(mockResultSet);
+		
+		verify(mockResultSet,times(1)).getInt(anyInt());
+		verify(mockResultSet,times(2)).getString(anyInt());
+		
+		assertEquals(userRoleExpected, actual);
+	}
+	@SuppressWarnings("unused")
+	@Test(expected = SQLException.class)
+	public void populateDtoTestException() throws SQLException{
+	
+		when(mockResultSet.getInt(anyInt())).thenThrow(new SQLException());
+		
+		UsersRole actual= spyUserRoleDao.populateDto(mockResultSet);
+		
+		verify(mockResultSet,times(1)).getInt(anyInt());
+		
 	}
 }

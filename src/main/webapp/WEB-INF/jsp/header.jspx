@@ -18,9 +18,7 @@
 <title>Tutor</title>
  <!--<jsp:directive.tagLib prefix="greetingstag" uri="/WEB-INF/tlds/usergreetingstag.tld" /> -->
   
-<script type="text/javascript" src="js/jquery.js">
-	<jsp:text />
-</script>
+
 <link href="styles/mainStyle.css" rel="stylesheet" type="text/css" />
 
 
@@ -45,7 +43,7 @@
 						<fmt:message key="header.logOut" bundle="${rb}" var="logOutText" />
 
 						<ul class="upgrade-logout-nav">
-							<li><a href="#">${greetingsText}&#160; ${userEntity.userName}</a></li>
+							<li><a href="#">${greetingsText}&#160;<c:out escapeXml="true" value="${userEntity.userName}"></c:out></a></li>
 							<li><a href="#">${statusText}:&#160;${usersRole.roleName}</a></li>
 							<li><form action="pages" method="post">
 									<input type="hidden" name="command" value="logOut" /> <input

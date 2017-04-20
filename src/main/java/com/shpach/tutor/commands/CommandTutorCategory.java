@@ -42,13 +42,13 @@ public class CommandTutorCategory implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 
 		Map<String, String[]> lastRequest = new HashMap<String, String[]>();
 		lastRequest.putAll(request.getParameterMap());
@@ -56,10 +56,10 @@ public class CommandTutorCategory implements ICommand {
 		request.getSession().setAttribute("lastRequest", lastRequest);
 
 		List<UserMenuItem> tutorMenu =new MenuStrategy(user).getMenu();
-		UserMenuService.setActiveMenuByCommand(tutorMenu, "tutorCategories");
+		UserMenuService.getInstance().setActiveMenuByCommand(tutorMenu, "tutorCategories");
 		request.setAttribute("menu", tutorMenu);
 
-		List<Category> categories = CategoryService.getCategoriesByUserWithTestsList(user);
+		List<Category> categories = CategoryService.getInstance().getCategoriesByUserWithTestsList(user);
 		request.setAttribute("categories", categories);
 		page = Config.getInstance().getProperty(Config.TUTOR_CATEGORIES);
 		return page;

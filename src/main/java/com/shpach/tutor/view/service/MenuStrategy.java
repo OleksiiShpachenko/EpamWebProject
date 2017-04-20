@@ -15,15 +15,15 @@ public class MenuStrategy {
 			return;
 		switch(user.getRoleId()){
 		case USER_ROLE_TUTOR: {
-			userMenu=UserMenuService.getTutorMenu(user);
+			userMenu=UserMenuService.getInstance().getTutorMenu(user);
 			break;
 		}
 		case USER_ROLE_STUDENT: {
-			userMenu=UserMenuService.getStudentMenu(user);
+			userMenu=UserMenuService.getInstance().getStudentMenu(user);
 			break;
 		}
 		default: {
-			userMenu=UserMenuService.getStudentMenu(user);
+			userMenu=UserMenuService.getInstance().getStudentMenu(user);
 			break;
 		}
 		}

@@ -1,186 +1,97 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.NamingException;
 
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.shpach.tutor.persistance.entities.Category;
 import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
 import com.shpach.tutor.persistance.jdbc.dao.category.ICategoryDao;
+import com.shpach.tutor.persistance.jdbc.dao.category.MySqlCategoryDao;
 import com.shpach.tutor.persistance.jdbc.dao.factory.IDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 
 @PowerMockIgnore("javax.management.*")
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(ConnectionPool.class)
-public class CategoryDaoTest {
-	private Connection mockConnection;
-	private PreparedStatement mockPreparedStmnt;
-	private ResultSet mockResultSet;
+public class CategoryDaoTest extends DaoTest {
+	private ICategoryDao categoryDao;
+	private MySqlCategoryDao spyCategoryDao;
 
 	@Before
-	public void init() {
-		mockConnection = Mockito.mock(Connection.class);
-		mockPreparedStmnt = Mockito.mock(PreparedStatement.class);
-		mockResultSet = Mockito.mock(ResultSet.class);
+	public void init() throws SQLException {
+		super.init();
+		IDaoFactory daoFactory = new MySqlDaoFactory();
+		categoryDao = daoFactory.getCategoryDao();
+		spyCategoryDao = (MySqlCategoryDao) spy(categoryDao);
 	}
 
 	@Test
-	public void findCategoryByIdTestExistId() throws SQLException, NamingException {
+	public void populateDtoTest() throws SQLException {
 		int categoryId = 1;
 		int categoryUserId = 2;
 		String categoryDescription = "Category descr";
 		String categoryName = "Category name";
 		byte categoryActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
+
+		Category expected = new Category();
+		expected.setCategoryId(categoryId);
+		expected.setCategory_user_id(categoryUserId);
+		expected.setCategoryName(categoryName);
+		expected.setCategoryDescription(categoryDescription);
+		expected.setCategoryActive(categoryActive);
+
 		when(mockResultSet.getInt(anyInt())).thenReturn(categoryId, categoryUserId);
-		when(mockResultSet.getByte(anyInt())).thenReturn(categoryActive);
 		when(mockResultSet.getString(anyInt())).thenReturn(categoryName, categoryDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-
-		Category category = new Category();
-		category.setCategoryId(categoryId);
-		category.setCategory_user_id(categoryUserId);
-		category.setCategoryName(categoryName);
-		category.setCategoryDescription(categoryDescription);
-		category.setCategoryActive(categoryActive);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		Category categoryExpected = categoryDao.findCategoryById(categoryId);
-
-		assertEquals(categoryExpected, category);
-	}
-
-	@Test
-	public void findCategoryByIdTestNotExistId() throws SQLException, NamingException {
-
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		Category categoryExpected = categoryDao.findCategoryById(2);
-
-		assertNull(categoryExpected);
-	}
-
-	@Test
-	public void findCategoryByTestIdTestExistId() throws SQLException, NamingException {
-		int categoryId = 1;
-		int categoryUserId = 2;
-		String categoryDescription = "Category descr";
-		String categoryName = "Category name";
-		byte categoryActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(categoryId, categoryUserId);
 		when(mockResultSet.getByte(anyInt())).thenReturn(categoryActive);
-		when(mockResultSet.getString(anyInt())).thenReturn(categoryName, categoryDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
 
-		Category category = new Category();
-		category.setCategoryId(categoryId);
-		category.setCategory_user_id(categoryUserId);
-		category.setCategoryName(categoryName);
-		category.setCategoryDescription(categoryDescription);
-		category.setCategoryActive(categoryActive);
-		List<Category> categories = new ArrayList<>();
-		categories.add(category);
+		Category actual = spyCategoryDao.populateDto(mockResultSet);
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categoriesExpected = categoryDao.findCategoryByTestId(2);
+		verify(mockResultSet, times(2)).getInt(anyInt());
+		verify(mockResultSet, times(2)).getString(anyInt());
+		verify(mockResultSet, times(1)).getByte(anyInt());
 
-		assertArrayEquals(categoriesExpected.toArray(), categories.toArray());
+		assertEquals(expected, actual);
+	}
+
+	@SuppressWarnings("unused")
+	@Test(expected = SQLException.class)
+	public void populateDtoTestException() throws SQLException {
+
+		when(mockResultSet.getInt(anyInt())).thenThrow(new SQLException());
+
+		Category actual = spyCategoryDao.populateDto(mockResultSet);
+
+		verify(mockResultSet, times(1)).getInt(anyInt());
+
 	}
 
 	@Test
-	public void findCategoryByTestIdTestNotExistId() throws SQLException, NamingException {
+	public void findAllTest() throws Exception {
+		List<Category> expecteds = new ArrayList<>(Arrays.asList(new Category(), new Category()));
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
+		doReturn(expecteds).when(spyCategoryDao).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categoriesExpected = categoryDao.findCategoryByTestId(2);
+		List<Category> actuals = spyCategoryDao.findAll();
 
-		assertNull(categoriesExpected);
-	}
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
 
-	@Test
-	public void findCategoryByUserIdTestExistId() throws SQLException, NamingException {
-		int categoryId = 1;
-		int categoryUserId = 2;
-		String categoryDescription = "Category descr";
-		String categoryName = "Category name";
-		byte categoryActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(categoryId, categoryUserId);
-		when(mockResultSet.getByte(anyInt())).thenReturn(categoryActive);
-		when(mockResultSet.getString(anyInt())).thenReturn(categoryName, categoryDescription);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
-
-		Category category = new Category();
-		category.setCategoryId(categoryId);
-		category.setCategory_user_id(categoryUserId);
-		category.setCategoryName(categoryName);
-		category.setCategoryDescription(categoryDescription);
-		category.setCategoryActive(categoryActive);
-		List<Category> categories = new ArrayList<>();
-		categories.add(category);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categoriesExpected = categoryDao.findCategoryByUserId(2);
-
-		assertArrayEquals(categoriesExpected.toArray(), categories.toArray());
-	}
-
-	@Test
-	public void findCategoryByUserIdTestNotExistId() throws SQLException, NamingException {
-
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.next()).thenReturn(Boolean.FALSE);
-
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categoriesExpected = categoryDao.findCategoryByUserId(2);
-
-		assertEquals(categoriesExpected.size(), 0);
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
 	}
 
 	@Test
@@ -190,22 +101,45 @@ public class CategoryDaoTest {
 		String categoryDescription = "Category descr";
 		String categoryName = "Category name";
 		byte categoryActive = 1;
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
 
-		Category category = new Category();
-		category.setCategoryId(categoryId);
-		category.setCategory_user_id(categoryUserId);
-		category.setCategoryName(categoryName);
-		category.setCategoryDescription(categoryDescription);
-		category.setCategoryActive(categoryActive);
+		Category expected = new Category();
+		expected.setCategoryId(categoryId);
+		expected.setCategory_user_id(categoryUserId);
+		expected.setCategoryName(categoryName);
+		expected.setCategoryDescription(categoryDescription);
+		expected.setCategoryActive(categoryActive);
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		Category categoryExpected = categoryDao.addOrUpdate(category);
+		doReturn(true).when(spyCategoryDao).dynamicUpdate(anyString(), anyObject());
 
-		assertNotNull(categoryExpected);
+		Category actual = spyCategoryDao.addOrUpdate(expected);
+
+		verify(spyCategoryDao, times(1)).dynamicUpdate(anyString(), anyObject());
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void addOrApdateTestUpdateCategoryFail() throws SQLException, NamingException {
+		int categoryId = 1;
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
+		Category expected = new Category();
+		expected.setCategoryId(categoryId);
+		expected.setCategory_user_id(categoryUserId);
+		expected.setCategoryName(categoryName);
+		expected.setCategoryDescription(categoryDescription);
+		expected.setCategoryActive(categoryActive);
+
+		doReturn(false).when(spyCategoryDao).dynamicUpdate(anyString(), anyObject());
+
+		Category actual = spyCategoryDao.addOrUpdate(expected);
+
+		verify(spyCategoryDao, times(1)).dynamicUpdate(anyString(), anyObject());
+
+		assertNull(actual);
 	}
 
 	@Test
@@ -216,23 +150,163 @@ public class CategoryDaoTest {
 		String categoryName = "Category name";
 		byte categoryActive = 1;
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeQuery()).thenReturn(mockResultSet);
-		when(mockResultSet.getInt(anyInt())).thenReturn(categoryId);
-		when(mockResultSet.next()).thenReturn(Boolean.TRUE, Boolean.FALSE);
+		Category inserted = new Category();
+		inserted.setCategory_user_id(categoryUserId);
+		inserted.setCategoryName(categoryName);
+		inserted.setCategoryDescription(categoryDescription);
+		inserted.setCategoryActive(categoryActive);
+
+		Category expected = new Category();
+		expected.setCategoryId(categoryId);
+		expected.setCategory_user_id(categoryUserId);
+		expected.setCategoryName(categoryName);
+		expected.setCategoryDescription(categoryDescription);
+		expected.setCategoryActive(categoryActive);
+
+		doReturn(categoryId).when(spyCategoryDao).dynamicAdd(anyString(), anyObject());
+
+		Category actual = spyCategoryDao.addOrUpdate(inserted);
+
+		verify(spyCategoryDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void addOrApdateTestNewCategoryFail() throws SQLException, NamingException {
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
+		Category inserted = new Category();
+		inserted.setCategory_user_id(categoryUserId);
+		inserted.setCategoryName(categoryName);
+		inserted.setCategoryDescription(categoryDescription);
+		inserted.setCategoryActive(categoryActive);
+
+		doReturn(0).when(spyCategoryDao).dynamicAdd(anyString(), anyObject());
+
+		Category actual = spyCategoryDao.addOrUpdate(inserted);
+
+		verify(spyCategoryDao, times(1)).dynamicAdd(anyString(), anyObject());
+
+		assertNull(actual);
+	}
+
+	@Test
+	public void findCategoryByIdTestExistId() throws SQLException, NamingException {
+		int categoryId = 1;
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
+		Category expected = new Category();
+		expected.setCategoryId(categoryId);
+		expected.setCategory_user_id(categoryUserId);
+		expected.setCategoryName(categoryName);
+		expected.setCategoryDescription(categoryDescription);
+		expected.setCategoryActive(categoryActive);
+
+		doReturn(new ArrayList<Category>(Arrays.asList(expected))).when(spyCategoryDao).findByDynamicSelect(anyString(),
+				anyString(), anyObject());
+
+		Category actuals = spyCategoryDao.findCategoryById(categoryId);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertEquals(expected, actuals);
+	}
+
+	@Test
+	public void findCategoryByIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Category>()).when(spyCategoryDao).findByDynamicSelect(anyString(), anyString(),
+				anyObject());
+
+		Category actuals = spyCategoryDao.findCategoryById(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertNull(actuals);
+	}
+
+	@Test
+	public void findCategoryByTestIdTestExistId() throws SQLException, NamingException {
+		int categoryId = 1;
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
 		Category category = new Category();
+		category.setCategoryId(categoryId);
 		category.setCategory_user_id(categoryUserId);
 		category.setCategoryName(categoryName);
 		category.setCategoryDescription(categoryDescription);
 		category.setCategoryActive(categoryActive);
+		List<Category> expecteds = new ArrayList<>();
+		expecteds.add(category);
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		Category categoryExpected = categoryDao.addOrUpdate(category);
+		doReturn(expecteds).when(spyCategoryDao).findByDynamicSelect(anyString(), anyObject());
 
-		assertEquals(categoryId, categoryExpected.getCategoryId());
+		List<Category> actuals = spyCategoryDao.findCategoryByTestId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
+	}
+
+	@Test
+	public void findCategoryByTestIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Category>()).when(spyCategoryDao).findByDynamicSelect(anyString(), anyObject());
+
+		List<Category> actuals = spyCategoryDao.findCategoryByTestId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertEquals(0, actuals.size());
+	}
+
+	@Test
+	public void findCategoryByUserIdTestExistId() throws SQLException, NamingException {
+		int categoryId = 1;
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
+		Category category = new Category();
+		category.setCategoryId(categoryId);
+		category.setCategory_user_id(categoryUserId);
+		category.setCategoryName(categoryName);
+		category.setCategoryDescription(categoryDescription);
+		category.setCategoryActive(categoryActive);
+		List<Category> expecteds = new ArrayList<>();
+		expecteds.add(category);
+
+		doReturn(expecteds).when(spyCategoryDao).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		List<Category> actuals = spyCategoryDao.findCategoryByUserId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
+	}
+
+	@Test
+	public void findCategoryByUserIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Category>()).when(spyCategoryDao).findByDynamicSelect(anyString(), anyString(),
+				anyObject());
+
+		List<Category> actuals = spyCategoryDao.findCategoryByUserId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyString(), anyObject());
+
+		assertEquals(0, actuals.size());
 	}
 
 	@Test
@@ -240,13 +314,11 @@ public class CategoryDaoTest {
 		int categoryId = 1;
 		int testId = 2;
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
+		doReturn(true).when(spyCategoryDao).dynamicUpdate(anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		boolean res = categoryDao.assignTestToCategory(testId, categoryId);
+		boolean res = spyCategoryDao.assignTestToCategory(testId, categoryId);
+
+		verify(spyCategoryDao, times(1)).dynamicUpdate(anyString(), anyObject());
 
 		assertTrue(res);
 	}
@@ -256,16 +328,51 @@ public class CategoryDaoTest {
 		int categoryId = 1;
 		int testId = 2;
 
-		PowerMockito.mockStatic(ConnectionPool.class);
-		PowerMockito.when(ConnectionPool.getConnection()).thenReturn(mockConnection);
-		when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStmnt);
-		when(mockPreparedStmnt.executeUpdate()).thenThrow(new SQLException());
+		doReturn(false).when(spyCategoryDao).dynamicUpdate(anyString(), anyObject());
 
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		boolean res = categoryDao.assignTestToCategory(testId, categoryId);
+		boolean res = spyCategoryDao.assignTestToCategory(testId, categoryId);
+
+		verify(spyCategoryDao, times(1)).dynamicUpdate(anyString(), anyObject());
 
 		assertFalse(res);
+	}
+
+	@Test
+	public void findCategoryByCommunityIdTestExistId() throws SQLException, NamingException {
+		int categoryId = 1;
+		int categoryUserId = 2;
+		String categoryDescription = "Category descr";
+		String categoryName = "Category name";
+		byte categoryActive = 1;
+
+		Category category = new Category();
+		category.setCategoryId(categoryId);
+		category.setCategory_user_id(categoryUserId);
+		category.setCategoryName(categoryName);
+		category.setCategoryDescription(categoryDescription);
+		category.setCategoryActive(categoryActive);
+		List<Category> expecteds = new ArrayList<>();
+		expecteds.add(category);
+
+		doReturn(expecteds).when(spyCategoryDao).findByDynamicSelect(anyString(), anyObject());
+
+		List<Category> actuals = spyCategoryDao.findCategoryByCommunityId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertArrayEquals(expecteds.toArray(), actuals.toArray());
+	}
+
+	@Test
+	public void findCategoryByCommunityIdTestNotExistId() throws SQLException, NamingException {
+
+		doReturn(new ArrayList<Category>()).when(spyCategoryDao).findByDynamicSelect(anyString(), anyObject());
+
+		List<Category> actuals = spyCategoryDao.findCategoryByCommunityId(2);
+
+		verify(spyCategoryDao, times(1)).findByDynamicSelect(anyString(), anyObject());
+
+		assertEquals(0, actuals.size());
 	}
 
 }

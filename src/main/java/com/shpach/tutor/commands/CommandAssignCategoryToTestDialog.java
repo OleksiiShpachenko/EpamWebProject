@@ -39,15 +39,15 @@ public class CommandAssignCategoryToTestDialog implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 
-		List<Category> categories = CategoryService.getCategoriesByUserWithTestsList(user);
+		List<Category> categories = CategoryService.getInstance().getCategoriesByUserWithTestsList(user);
 		request.setAttribute("categories", categories);
 
 		request.setAttribute("assignCategoryToTestDialog", true);

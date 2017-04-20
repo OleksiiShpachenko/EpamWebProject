@@ -101,6 +101,10 @@
 </head>
 <body>
 	<c:import url="/WEB-INF/jsp/header.jspx" />
+	
+	Best worst user: ${bestWorstUser.userName} 
+	<br/>
+	Hardest test: ${hardestTest.testName} 
 	<div style="padding: 20px 20px">
 
 		<div>
@@ -298,6 +302,7 @@
 						</ul>
 					</div>
 				</div>
+				<!--
 				<div class="col-span-7">
 					<span id="cat_filter" class="search_filter hide_if_no_data"></span>
 					<span class="hide_if_no_data  not-ie67"> <input type="text"
@@ -305,7 +310,7 @@
 						class="hide_if_no_data" /> <span class="only-ie little">Search
 							Test Name</span></span>
 				</div>
-
+-->
 			</div>
 
 			<!-- TESTS LIST: START -->
@@ -321,6 +326,7 @@
 							</div>
 							<div class="col-span-4 col-btns">
 								<div class="inlineBox">
+								<!--
 									<div>
 										<form id="myHiddenFormId" action="pages" method="post">
 											<input type="hidden" name="command" value="editTest" /> <input
@@ -340,6 +346,7 @@
 												value="${statisticsText}" />
 										</form>
 									</div>
+									-->
 								</div>
 							</div>
 							<span class="caret">&#160;</span>

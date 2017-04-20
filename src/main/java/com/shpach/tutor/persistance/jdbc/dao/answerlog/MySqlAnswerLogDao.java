@@ -4,13 +4,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.shpach.tutor.persistance.entities.AnswersLog;
+import com.shpach.tutor.persistance.entities.Category;
 import com.shpach.tutor.persistance.jdbc.connection.ConnectionPool;
+import com.shpach.tutor.persistance.jdbc.connection.ConnectionPoolTomCatFactory;
+import com.shpach.tutor.persistance.jdbc.connection.IConnectionPoolFactory;
 import com.shpach.tutor.persistance.jdbc.dao.abstractdao.AbstractDao;
-import com.shpach.tutor.persistance.jdbc.dao.test.MySqlTestDao;
+
 
 public class MySqlAnswerLogDao extends AbstractDao<AnswersLog> implements IAnswerLogDao {
 	private static final Logger logger = Logger.getLogger(MySqlAnswerLogDao.class);
@@ -59,21 +63,23 @@ public class MySqlAnswerLogDao extends AbstractDao<AnswersLog> implements IAnswe
 
 	}
 	@Override
-	protected AnswersLog populateDto(ResultSet rs) throws SQLException {
+	public AnswersLog populateDto(ResultSet rs) throws SQLException {
 		AnswersLog dto = new AnswersLog();
 		dto.setAnswerLogId(rs.getInt(Columns.answer_log_id.getId()));
 		dto.setAnswerChecked(rs.getByte(Columns.answer_checked.getId()));
+		dto.setAnswerId(rs.getInt(Columns.answer_id.getId()));
 		dto.setAnswerLogSortingOrder(rs.getInt(Columns.answer_log_sorting_order.getId()));
 		return dto;
 	}
 
 	@Override
 	public AnswersLog addOrUpdate(AnswersLog answersLog) {
-		//ConnectionPool pool = ConnectionPool.getInstance();
 		Connection connection = null;
 		AnswersLog answersLogNew = null;
 		try {
-			connection =ConnectionPool.getConnection();// pool.getConnection();
+			//connection =ConnectionPool.getConnection();
+			IConnectionPoolFactory connectionFactory = (IConnectionPoolFactory) new ConnectionPoolTomCatFactory();
+			connection= connectionFactory.getConnection();
 			connection.setAutoCommit(false);
 			answersLogNew = addOrUpdate(answersLog, connection);
 			connection.setAutoCommit(true);
@@ -157,5 +163,18 @@ public class MySqlAnswerLogDao extends AbstractDao<AnswersLog> implements IAnswe
 			logger.error(e, e);
 			return false;
 		}
+	}
+
+	@Override
+	public List<AnswersLog> findAnswersLogByQuestionLogId(int questionLogId) {
+		List<AnswersLog> res = null;
+		try {
+			res = findByDynamicSelect(SQL_SELECT, Columns.question_log_id.name(), Integer.toString(questionLogId));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return res;
+
 	}
 }

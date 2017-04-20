@@ -1,5 +1,6 @@
 package com.shpach.tutor.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.shpach.tutor.persistance.entities.Answer;
@@ -16,18 +17,40 @@ import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
  */
 public class AnswerService {
 
+	private static AnswerService instance = null;
+	private IAnswerDao answerDao;
+
+	private AnswerService() {
+
+	}
+
+	public static synchronized AnswerService getInstance() {
+		if (instance == null) {
+			instance = new AnswerService();
+		}
+		return instance;
+	}
+
+	public IAnswerDao getAnswerDao() {
+		if (answerDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			answerDao = daoFactory.getAnswerDao();
+		}
+		return answerDao;
+	}
+
 	/**
-	 * Add new list of Answer entities to database
+	 * Add new list of {@link Answer} entities to database
 	 * 
 	 * @param answers
-	 *            - list of Answer entities
+	 *            - list of {@link Answer} entities
 	 * @return boolean values is operation success
 	 */
-	public static boolean addNewAnswersList(List<Answer> answers) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IAnswerDao answerDao = daoFactory.getAnswerDao();
+	public boolean addNewAnswersList(List<Answer> answers) {
+		if (answers == null)
+			return false;
 		for (Answer item : answers) {
-			Answer answer = answerDao.addOrUpdate(item);
+			Answer answer = getAnswerDao().addOrUpdate(item);
 			if (answer == null)
 				return false;
 		}
@@ -35,17 +58,30 @@ public class AnswerService {
 	}
 
 	/**
-	 * Gets the list of Answer entities from database by Question
+	 * Gets the list of {@link Answer} entities from database by Question
 	 * 
 	 * @param item
 	 *            - Question entity
-	 * @return List of Answer entities
+	 * @return List of {@link Answer} entities
 	 */
-	public static List<Answer> getAnswersByQuestion(Question item) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IAnswerDao answerDao = daoFactory.getAnswerDao();
-		return answerDao.findAnswerByQuestionId(item.getQuestionId());
+	public List<Answer> getAnswersByQuestion(Question item) {
+		if (item == null)
+			return new ArrayList<Answer>();
+		List<Answer> res = getAnswerDao().findAnswerByQuestionId(item.getQuestionId());
+		if (res == null)
+			res = new ArrayList<Answer>();
+		return res;
 
+	}
+
+	/**
+	 * Gets {@link Answer} from database by Id
+	 * 
+	 * @param answerId
+	 * @return {@link Answer}
+	 */
+	public Answer getAnswerById(int answerId) {
+		return getAnswerDao().findAnswerById(answerId);
 	}
 
 }

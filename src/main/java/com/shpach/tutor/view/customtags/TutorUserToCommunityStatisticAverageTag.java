@@ -42,12 +42,14 @@ public class TutorUserToCommunityStatisticAverageTag extends TagSupport {
 		String res = "";
 
 		OptionalDouble count = null;
-		if (community.getTests() != null) {
-			count = community.getTests().stream()
-					.mapToInt(c -> TaskService.CalculateAverageScore(
-							c.getTasks().stream().filter(a -> a.getUserId() == userId).collect(Collectors.toList())))
-					.filter(c -> c != TaskService.EXLUDABLE_AVERAGE).average();
-		}
+		//TODO change insertParam to Category
+//		
+//		if (community.getTests() != null) {
+//			count = community.getTests().stream()
+//					.mapToInt(c -> TaskService.CalculateAverageScore(
+//							c.getTasks().stream().filter(a -> a.getUserId() == userId).collect(Collectors.toList())))
+//					.filter(c -> c != TaskService.EXLUDABLE_AVERAGE).average();
+//		}
 		if (count != null && count.isPresent()) {
 			res = Integer.toString((int) count.getAsDouble()) + "%";
 		}

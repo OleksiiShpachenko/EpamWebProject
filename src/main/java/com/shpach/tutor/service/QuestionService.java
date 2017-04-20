@@ -20,6 +20,42 @@ import com.shpach.tutor.persistance.jdbc.dao.question.IQuestionDao;
  *
  */
 public class QuestionService {
+	private static QuestionService instance;
+	private IQuestionDao questionDao;
+	private AnswerService answerService;
+	private TestQuestionsBankService testQuestionsBankService;
+
+	private QuestionService() {
+
+	}
+
+	public static synchronized QuestionService getInstance() {
+		if (instance == null) {
+			instance = new QuestionService();
+		}
+		return instance;
+	}
+
+	private IQuestionDao getQuestionDao() {
+		if (questionDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			questionDao = daoFactory.getQuestionDao();
+		}
+		return questionDao;
+	}
+
+	private AnswerService getAnswerService() {
+		if (answerService == null)
+			answerService = AnswerService.getInstance();
+		return answerService;
+	}
+
+	public TestQuestionsBankService getTestQuestionsBankService() {
+		if (testQuestionsBankService == null)
+			testQuestionsBankService = TestQuestionsBankService.getInstance();
+		return testQuestionsBankService;
+	}
+
 	/**
 	 * Gets count of {@link Question} assigned to {@link User}
 	 * 
@@ -27,10 +63,12 @@ public class QuestionService {
 	 *            - {@link User} entity class
 	 * @return count of assigned {@link Question} to {@link User}
 	 */
-	public static int getQuestionsCountByUser(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IQuestionDao questionDao = daoFactory.getQuestionDao();
-		List<Question> questions = questionDao.findQuestionByUserId(user.getUserId());
+	public int getQuestionsCountByUser(User user) {
+		if (user == null)
+			return 0;
+		List<Question> questions = getQuestionDao().findQuestionByUserId(user.getUserId());
+		if (questions == null)
+			return 0;
 		return questions.size();
 	}
 
@@ -42,10 +80,12 @@ public class QuestionService {
 	 *            - {@link User} entity class
 	 * @return list of {@link Question}
 	 */
-	public static List<Question> getQuestionsByUserWithAnswersAndTestsList(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IQuestionDao questionDao = daoFactory.getQuestionDao();
-		List<Question> questions = questionDao.findQuestionByUserId(user.getUserId());
+	public List<Question> getQuestionsByUserWithAnswersAndTestsList(User user) {
+		if (user == null)
+			return new ArrayList<Question>();
+		List<Question> questions = getQuestionDao().findQuestionByUserId(user.getUserId());
+		if (questions == null)
+			return new ArrayList<Question>();
 		insertTestsToquestionsList(questions);
 		insertAnswersToQuestionsList(questions);
 		return questions;
@@ -57,9 +97,9 @@ public class QuestionService {
 	 * @param questions
 	 *            - list of {@link Question}
 	 */
-	private static void insertAnswersToQuestionsList(List<Question> questions) {
+	private void insertAnswersToQuestionsList(List<Question> questions) {
 		for (Question item : questions) {
-			List<Answer> answers = AnswerService.getAnswersByQuestion(item);
+			List<Answer> answers = getAnswerService().getAnswersByQuestion(item);
 			if (answers != null)
 				item.setAnswers(answers);
 		}
@@ -71,9 +111,9 @@ public class QuestionService {
 	 * @param questions
 	 *            - list of {@link Question}
 	 */
-	private static void insertTestsToquestionsList(List<Question> questions) {
+	private void insertTestsToquestionsList(List<Question> questions) {
 		for (Question item : questions) {
-			List<TestQuestionsBank> testQuestionsBank = TestQuestionsBankService
+			List<TestQuestionsBank> testQuestionsBank = getTestQuestionsBankService()
 					.getTestQuestionsBankWithTestInfoByQuestion(item);
 			if (testQuestionsBank != null) {
 				item.setTestQuestionsBanks(testQuestionsBank);
@@ -96,8 +136,10 @@ public class QuestionService {
 	 *            - {@link User} which is created the question
 	 * @return
 	 */
-	public static boolean addNewQuestion(String questionName, String questionText, String[] questionAnswers,
+	public boolean addNewQuestion(String questionName, String questionText, String[] questionAnswers,
 			String[] questionAnswerCorrect, User user) {
+		if (user == null)
+			return false;
 		Question question = new Question();
 		question.setQuestionName(questionName);
 		question.setQuestionText(questionText);
@@ -108,15 +150,14 @@ public class QuestionService {
 		boolean questionValidation = validateQuestion(question);
 		if (!questionValidation)
 			return false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IQuestionDao questionDao = daoFactory.getQuestionDao();
-		Question addedQuestion = questionDao.addOrUpdate(question);
+
+		Question addedQuestion = getQuestionDao().addOrUpdate(question);
 		if (addedQuestion == null)
 			return false;
 		for (Answer item : answers) {
 			item.setQuestionId(addedQuestion.getQuestionId());
 		}
-		boolean isOk = AnswerService.addNewAnswersList(answers);
+		boolean isOk = getAnswerService().addNewAnswersList(answers);
 		if (!isOk)
 			return false;
 		return true;
@@ -134,7 +175,9 @@ public class QuestionService {
 	 */
 	private static List<Answer> createAnswersFromParams(String[] questionAnswers, String[] questionAnswerCorrect) {
 		List<Answer> res = new ArrayList<>();
-		List<String> correctAnswersIndexies = new ArrayList<>(Arrays.asList(questionAnswerCorrect));
+		List<String> correctAnswersIndexies = new ArrayList<>();
+		if (questionAnswerCorrect != null)
+			correctAnswersIndexies.addAll(Arrays.asList(questionAnswerCorrect));
 		for (int i = 0; i < questionAnswers.length; i++) {
 			if (!questionAnswers[i].equals("")) {
 				Answer answer = new Answer();
@@ -200,14 +243,13 @@ public class QuestionService {
 	 * @return {@link Question} with collection of assigned collection of
 	 *         {@link Answer}
 	 */
-	public static Question getQuestionByIdWithAnswers(int questionId) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IQuestionDao questionDao = daoFactory.getQuestionDao();
-		Question question = questionDao.findQuestionById(questionId);
-		List<Question> questions = new ArrayList<>();
-		questions.add(question);
-		insertAnswersToQuestionsList(questions);
+	public Question getQuestionByIdWithAnswers(int questionId) {
+		Question question = getQuestionDao().findQuestionById(questionId);
+		if (question != null) {
+			List<Question> questions = new ArrayList<>();
+			questions.add(question);
+			insertAnswersToQuestionsList(questions);
+		}
 		return question;
 	}
-
 }

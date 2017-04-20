@@ -54,9 +54,7 @@ public class Test implements Serializable {
 			@JoinColumn(name = "test_id") }, inverseJoinColumns = { @JoinColumn(name = "category_id") })
 	private List<Category> categories;
 
-	// bi-directional many-to-many association to Community
-	@ManyToMany(mappedBy = "tests")
-	private List<Community> communities;
+	
 
 	public Test() {
 	}
@@ -186,13 +184,7 @@ public class Test implements Serializable {
 		this.categories = categories;
 	}
 
-	public List<Community> getCommunities() {
-		return this.communities;
-	}
-
-	public void setCommunities(List<Community> communities) {
-		this.communities = communities;
-	}
+	
 
 	@Override
 	public int hashCode() {

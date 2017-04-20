@@ -34,6 +34,10 @@ public class Category implements Serializable {
 	@ManyToMany(mappedBy="categories")
 	private List<Test> tests;
 
+	// bi-directional many-to-many association to Community
+		@ManyToMany(mappedBy = "categories")
+		private List<Community> communities;
+	
 	public Category() {
 	}
 
@@ -84,7 +88,13 @@ public class Category implements Serializable {
 	public void setCategory_user_id(int category_user_id) {
 		this.category_user_id = category_user_id;
 	}
+	public List<Community> getCommunities() {
+		return this.communities;
+	}
 
+	public void setCommunities(List<Community> communities) {
+		this.communities = communities;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;

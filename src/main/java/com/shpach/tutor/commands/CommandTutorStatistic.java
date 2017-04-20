@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.shpach.tutor.manager.Config;
 import com.shpach.tutor.persistance.entities.Community;
+import com.shpach.tutor.persistance.entities.Test;
 import com.shpach.tutor.persistance.entities.User;
 import com.shpach.tutor.service.CommunityService;
 import com.shpach.tutor.service.SessionServise;
@@ -43,26 +44,32 @@ public class CommandTutorStatistic implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		Map<String, String[]> lastRequest = new HashMap<String, String[]>();
 		lastRequest.putAll(request.getParameterMap());
 		request.getSession().setAttribute("lastRequest", lastRequest);
 
 		List<UserMenuItem> tutorMenu = new MenuStrategy(user).getMenu();
-		UserMenuService.setActiveMenuByCommand(tutorMenu, "tutorStatistic");
+		UserMenuService.getInstance().setActiveMenuByCommand(tutorMenu, "tutorStatistic");
 		request.setAttribute("menu", tutorMenu);
 
-		List<Community> communities = CommunityService.getCommunitiesByUserWithTestsAndUsers(user);
+		List<Community> communities = CommunityService.getInstance().getCommunitiesByUserWithCategoriesAndUsers(user);
 		if (communities != null) {
-			communities.forEach(c -> TaskService.insertTasksToTestsList(c.getTests()));
+			communities.forEach(c ->  c.getCategories().forEach(j-> TaskService.getInstance().insertTasksToTestsListByUser(j.getTests(), user)));
 		}
 
+		User bestWorstUser=UserService.getInstance().findUserWithGreatWorstStatistic();
+		Test hardestTest=TaskService.getInstance().getHardestTestByTasksScore();
+		
+		request.setAttribute("bestWorstUser", bestWorstUser);
+		request.setAttribute("hardestTest", hardestTest);
+		
 		request.setAttribute("communities", communities);
 
 		page = Config.getInstance().getProperty(Config.TUTOR_STATISTIC);

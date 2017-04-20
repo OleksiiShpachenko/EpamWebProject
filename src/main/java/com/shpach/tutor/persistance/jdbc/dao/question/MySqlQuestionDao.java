@@ -2,6 +2,7 @@ package com.shpach.tutor.persistance.jdbc.dao.question;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -57,9 +58,9 @@ public class MySqlQuestionDao extends AbstractDao<Question> implements IQuestion
 			return instance;
 
 	}
-	
+
 	@Override
-	protected Question populateDto(ResultSet rs) throws SQLException {
+	public Question populateDto(ResultSet rs) throws SQLException {
 		Question dto = new Question();
 		dto.setQuestionId(rs.getInt(Columns.question_id.getId()));
 		dto.setUserId(rs.getInt(Columns.user_id.getId()));
@@ -70,13 +71,7 @@ public class MySqlQuestionDao extends AbstractDao<Question> implements IQuestion
 	}
 
 	public List<Question> findAll() {
-		List<Question> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public Question addOrUpdate(Question question) {
@@ -92,7 +87,6 @@ public class MySqlQuestionDao extends AbstractDao<Question> implements IQuestion
 	}
 
 	private boolean update(Question question) {
-
 		Object[] sqlParams = new Object[] { question.getUserId(), question.getQuestionText(),
 				question.getQuestionActive(), question.getQuestionName(), question.getQuestionId() };
 		return dynamicUpdate(SQL_UPDATE, sqlParams);
@@ -107,29 +101,17 @@ public class MySqlQuestionDao extends AbstractDao<Question> implements IQuestion
 			return true;
 		}
 		return false;
-
 	}
 
 	public Question findQuestionById(int id) {
-		List<Question> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.question_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		List<Question> res = findByDynamicSelect(SQL_SELECT, Columns.question_id.name(), Integer.toString(id));
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
 	}
 
 	public List<Question> findQuestionByUserId(int id) {
-		List<Question> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, Columns.user_id.name(), Integer.toString(id));
 	}
 
 }

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    Document   : main
+    Created on : 21.02.2013, 21:05:23
+    Author     : Artem
+-->
+<jsp:root xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:fmt="http://java.sun.com/jsp/jstl/fmt" version="2.0">
+
+	<jsp:directive.page contentType="text/html" pageEncoding="UTF-8" />
+	<!--<fmt:setLocale value="en_US" scope="session" />-->
+	<fmt:setBundle basename="pagecontent" var="rb" />
+	<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- <link rel="stylesheet" href="styles/loginStyle.css" media="screen"
+	type="text/css" />
+	-->
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="js/jquery.js">
+	<jsp:text />
+</script>
+<title>Hello !</title>
+</head>
+<body>
+
+	<c:import url="/WEB-INF/jsp/header.jspx" />
+
+
+	<div id="signupbox" style="display: block; margin-top: 50px"
+		class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+		<div class="panel panel-info">
+			<div class="panel-heading">
+				<fmt:message key="registration.registration" bundle="${rb}"
+					var="registrationText" />
+				<div class="panel-title">${registrationText}</div>
+				<!-- <div
+					style="float: right; font-size: 85%; position: relative; top: -10px">
+					<a id="signinlink" href="#"
+						onclick="$('#signupbox').hide(); $('#loginbox').show()">${autorizationText}</a>
+				</div>-->
+			</div>
+			<div class="panel-body">
+				<form id="signupform" class="form-horizontal" role="form"
+					action="pages" method="post">
+					<input type="hidden" name="command" value="registration" />
+					<div id="signupalert" style="display: none"
+						class="alert alert-danger">
+						<p>Error:</p>
+						<span></span>
+					</div>
+					<fmt:message key="registration.userName" bundle="${rb}"
+						var="userNameText" />
+					<fmt:message key="registration.student" bundle="${rb}"
+						var="studentText" />
+					<fmt:message key="registration.tutor" bundle="${rb}"
+						var="tutorText" />
+					<fmt:message key="login.login" bundle="${rb}" var="loginText" />
+					<fmt:message key="login.password" bundle="${rb}" var="passwordText" />
+					<fmt:message key="login.confirmPassword" bundle="${rb}"
+						var="confirmPasswordText" />
+					<div class="form-group">
+						<div class="col-md-3">
+							<input type="radio" name="userRole" value="2" checked="checked"
+								id="a1">${studentText}</input>
+						</div>
+						<div class="col-md-9">
+							<input type="radio" name="userRole" value="1" id="a2">${tutorText }</input>
+						</div>
+					</div>
+					<c:set var="fillUserEmailValue"
+					value="${fillCorrectEmailMessage == true ? 'registration.fillUserEmailMessage': 'emptyValue'}" />
+				<fmt:message key="${fillUserEmailValue}" bundle="${rb}"
+					var="fillUserEmailText" />
+					<c:set var="emailAllReadyExistValue"
+					value="${emailAllReadyExistMessage == true ? 'registration.emailAllReadyExistMessage': 'emptyValue'}" />
+				<fmt:message key="${emailAllReadyExistValue}" bundle="${rb}"
+					var="emailAllReadyExistText" />
+
+					<div class="form-group">
+						<label for="userEmail" class="col-md-3 control-label">${loginText}</label>
+						<div class="col-md-9">
+							<input type="email" class="form-control" name="userEmail" value="${userEmail}"
+								placeholder="${loginText}" />
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-md-3"><jsp:text /></div>
+						<div class="col-md-9 text-danger">
+							${fillUserEmailText}${emailAllReadyExistText}
+						</div>
+						
+					</div>
+
+				<c:set var="fillUserNameValue"
+					value="${fillUserNameMessage == true ? 'registration.fillUserNameMessage': 'emptyValue'}" />
+				<fmt:message key="${fillUserNameValue}" bundle="${rb}"
+					var="fillUserNameText" />
+
+					<div class="form-group">
+						<label for="userName" class="col-md-3 control-label">${userNameText}</label>
+						<div class="col-md-9">
+							<input type="text" class="form-control" name="userName"
+								placeholder="${userNameText}" value="${userName}"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-md-3"><jsp:text /></div>
+						<div class="col-md-9 text-danger">
+							${fillUserNameText}
+						</div>
+					</div>
+					<!--<div class="form-group">
+							<label for="lastname" class="col-md-3 control-label">Last
+								Name</label>
+							<div class="col-md-9">
+								<input type="text" class="form-control" name="lastname"
+									placeholder="Last Name" />
+							</div>
+						</div>
+						-->
+					<div class="form-group">
+						<label for="password" class="col-md-3 control-label">${passwordText}</label>
+						<div class="col-md-9">
+							<input id="password" type="password" class="form-control" name="password"
+								placeholder="${passwordText}" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="password" class="col-md-3 control-label">${confirmPasswordText}</label>
+						<div class="col-md-9">
+							<input id="confirm_password" type="password" class="form-control" name="confirm_password"
+								placeholder="${confirmPasswordText}" /><br/><span id="message"></span>
+						</div>
+					</div>
+					<c:set var="fillPasswordValue"
+					value="${fillCorrectPasswordMessage == true ? 'registration.fillPasswordMessage': 'emptyValue'}" />
+				<fmt:message key="${fillPasswordValue}" bundle="${rb}"
+					var="fillPasswordText" />
+					<div class="form-group">
+						<div class="col-md-3"><jsp:text /></div>
+						<div class="col-md-9 text-danger">
+							${fillPasswordText}
+						</div>
+					</div>
+					<!--
+						<div class="form-group">
+							<label for="icode" class="col-md-3 control-label">Invitation
+								Code</label>
+							<div class="col-md-9">
+								<input type="text" class="form-control" name="icode"
+									placeholder="" />
+							</div>
+						</div>
+						-->
+					<div class="form-group">
+						<!-- Button -->
+						<fmt:message key="login.enter" bundle="${rb}" var="enterText" />
+						<div class="col-md-offset-3 col-md-9">
+							<button id="btn-signup" type="submit" class="btn btn-info">
+								<i class="icon-hand-right"></i> &#160;${enterText}
+							</button>
+
+						</div>
+					</div>
+
+					<div style="border-top: 1px solid #999; padding-top: 20px"
+						class="form-group">
+						<!--				
+							<div class="col-md-offset-3 col-md-9">
+								<button id="btn-fbsignup" type="button" class="btn btn-primary">
+									<i class="icon-facebook"></i>   Sign Up with Facebook
+								</button>
+							</div>
+							-->
+					</div>
+
+
+
+				</form>
+				<fmt:message key="login.matchingPass" bundle="${rb}" var="matchingPassText" />
+		        <fmt:message key="login.notMatchingPass" bundle="${rb}" var="notMatchingPassText" />
+		<script>
+		
+			$('#confirm_password').on('keyup', function() {
+				if ($(this).val() == $('#password').val()) {
+					$('#message').html('${matchingPassText}').css('color', 'green');
+				} else
+					$('#message').html('${notMatchingPassText}').css('color', 'red');
+			});
+		</script>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+	</html>
+</jsp:root>
+
+

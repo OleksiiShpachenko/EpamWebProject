@@ -1,8 +1,10 @@
 package com.shpach.tutor.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.shpach.tutor.persistance.entities.Category;
+import com.shpach.tutor.persistance.entities.Community;
 import com.shpach.tutor.persistance.entities.Test;
 import com.shpach.tutor.persistance.entities.User;
 import com.shpach.tutor.persistance.jdbc.dao.category.ICategoryDao;
@@ -16,6 +18,35 @@ import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
  *
  */
 public class CategoryService {
+	private static CategoryService instance;
+	private ICategoryDao categoryDao;
+	private TestService testService;
+
+	private CategoryService() {
+
+	}
+
+	public static synchronized CategoryService getInstance() {
+		if (instance == null) {
+			instance = new CategoryService();
+		}
+		return instance;
+	}
+
+	private ICategoryDao getCategoryDao() {
+		if (categoryDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			categoryDao = daoFactory.getCategoryDao();
+		}
+		return categoryDao;
+	}
+
+	private TestService getTestService() {
+		if (testService == null)
+			testService = TestService.getInstance();
+		return testService;
+	}
+
 	/**
 	 * Gets list of {@link Category} from database by {@link Test}
 	 * 
@@ -23,10 +54,13 @@ public class CategoryService {
 	 *            - {@link Test} entity class
 	 * @return list of {@link Category}
 	 */
-	public static List<Category> getCategoryByTest(Test test) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		return categoryDao.findCategoryByTestId(test.getTestId());
+	public List<Category> getCategoryByTest(Test test) {
+		if (test == null)
+			return new ArrayList<Category>();
+		List<Category> res = getCategoryDao().findCategoryByTestId(test.getTestId());
+		if (res == null)
+			res = new ArrayList<Category>();
+		return res;
 	}
 
 	/**
@@ -36,10 +70,12 @@ public class CategoryService {
 	 *            - {@link User} entity class
 	 * @return count of assigned {@link Category} to {@link User}
 	 */
-	public static int getCategoriesCountByUser(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categories = categoryDao.findCategoryByUserId(user.getUserId());
+	public int getCategoriesCountByUser(User user) {
+		if (user == null)
+			return 0;
+		List<Category> categories = getCategoryDao().findCategoryByUserId(user.getUserId());
+		if (categories == null)
+			return 0;
 		return categories.size();
 	}
 
@@ -51,12 +87,13 @@ public class CategoryService {
 	 *            {@link User} entity class
 	 * @return list of {@link Category}
 	 */
-	public static List<Category> getCategoriesByUserWithTestsList(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		List<Category> categories = categoryDao.findCategoryByUserId(user.getUserId());
-		if (categories != null)
-			insertTestsToCategory(categories);
+	public List<Category> getCategoriesByUserWithTestsList(User user) {
+		if (user == null)
+			return new ArrayList<Category>();
+		List<Category> categories = getCategoryDao().findCategoryByUserId(user.getUserId());
+		if (categories == null)
+			categories = new ArrayList<Category>();
+		insertTestsToCategory(categories);
 		return categories;
 
 	}
@@ -67,9 +104,9 @@ public class CategoryService {
 	 * @param categories
 	 *            - list of {@link Category}
 	 */
-	private static void insertTestsToCategory(List<Category> categories) {
+	private void insertTestsToCategory(List<Category> categories) {
 		for (Category item : categories) {
-			List<Test> tests = TestService.getTestsByCategory(item);
+			List<Test> tests = getTestService().getTestsByCategory(item);
 			item.setTests(tests);
 		}
 	}
@@ -81,12 +118,12 @@ public class CategoryService {
 	 *            {@link Category} entity class
 	 * @return boolean values is operation success
 	 */
-	public static boolean addNewCategory(Category category) {
+	public boolean addNewCategory(Category category) {
 		boolean res = false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		Category cat = categoryDao.addOrUpdate(category);
-		if (cat != null)
+		if (category == null)
+			return res;
+		Category insertedCategory = getCategoryDao().addOrUpdate(category);
+		if (insertedCategory != null)
 			res = true;
 		return res;
 	}
@@ -100,7 +137,7 @@ public class CategoryService {
 	 *            -id of {@link Category} in {@link String} format
 	 * @return boolean values is operation success
 	 */
-	public static boolean assignTestToCategory(String testId, String categoryId) {
+	public boolean assignTestToCategory(String testId, String categoryId) {
 		boolean res = false;
 
 		try {
@@ -122,11 +159,15 @@ public class CategoryService {
 	 *            -id of {@link Category} in int format
 	 * @return boolean values is operation success
 	 */
-	private static boolean assignTestToCategory(int testId, int categoryId) {
-		if (testId < 1 && categoryId < 1)
+	private boolean assignTestToCategory(int testId, int categoryId) {
+		if (testId < 1 || categoryId < 1)
 			return false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ICategoryDao categoryDao = daoFactory.getCategoryDao();
-		return categoryDao.assignTestToCategory(testId, categoryId);
+		return getCategoryDao().assignTestToCategory(testId, categoryId);
 	}
+
+	public List<Category> getCategoriesByCommunity(Community item) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

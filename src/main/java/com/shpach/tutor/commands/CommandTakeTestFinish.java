@@ -36,7 +36,7 @@ public class CommandTakeTestFinish implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
@@ -48,10 +48,10 @@ public class CommandTakeTestFinish implements ICommand {
 			logger.error("no Task attribute in session");
 			return Config.getInstance().getProperty(Config.ERROR);
 		}
-		byte score = TaskService.calculateTascScore(task);
+		byte score = TaskService.getInstance().calculateTascScore(task);
 		task.setTaskScore(score);
 		task.setTaskDatetimeStop(new Date());
-		boolean isOk = TaskService.addTaskWithQuestionsLogAndAnswersLog(task);
+		boolean isOk = TaskService.getInstance().addTaskWithQuestionsLogAndAnswersLog(task);
 		if (isOk) {
 			request.setAttribute("taskScore", score);
 		}

@@ -36,19 +36,19 @@ public class CommandNewCategory implements ICommand {
 			logger.warn("try to access without session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		checkSession = SessionServise.checkSession(session.getId(), (String) session.getAttribute("user"));
+		checkSession = SessionServise.getInstance().checkSession(session.getId(), (String) session.getAttribute("user"));
 		if (!checkSession) {
 			session.invalidate();
 			logger.warn("invalid session");
 			return page = Config.getInstance().getProperty(Config.LOGIN);
 		}
-		User user = UserService.getUserByLogin((String) session.getAttribute("user"));
+		User user = UserService.getInstance().getUserByLogin((String) session.getAttribute("user"));
 		String categoryName = request.getParameter("cat_name");
 		Category category = new Category();
 		category.setCategoryName(categoryName);
 		category.setCategory_user_id(user.getUserId());
 		category.setCategoryActive((byte) 1);
-		boolean isOk = CategoryService.addNewCategory(category);
+		boolean isOk = CategoryService.getInstance().addNewCategory(category);
 		request.setAttribute("addCategoryStatus", isOk);
 		page = "/pages";
 		return page;

@@ -10,6 +10,7 @@ public interface ICategoryDao {
 	public Category findCategoryById(int id);
 	public List<Category> findCategoryByTestId(int id);
 	public List<Category> findCategoryByUserId(int id);
+	public List<Category> findCategoryByCommunityId(int id);
 	public boolean assignTestToCategory(int testId, int categoryId);
 	
 

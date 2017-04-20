@@ -2,6 +2,7 @@ package com.shpach.tutor.persistance.jdbc.dao.category;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -33,6 +34,7 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 
 	protected static final String TABLE_NAME = "category";
 	protected static final String TABLE_TEST_TO_CATEGORY_RELATIONSHIP = "test_to_category_relationship";
+	protected static final String TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP = "category_to_community_relationship";
 	protected final String SQL_SELECT = "SELECT " + Columns.category_id.name() + ", " + Columns.category_name.name()
 			+ ", " + Columns.category_description.name() + ", " + Columns.category_active.name() + ", "
 			+ Columns.category_user_id.name() + " FROM " + TABLE_NAME + "";
@@ -50,6 +52,13 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 			+ TABLE_TEST_TO_CATEGORY_RELATIONSHIP + " WHERE " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + ".test_id=? AND "
 			+ TABLE_TEST_TO_CATEGORY_RELATIONSHIP + "." + Columns.category_id.name() + "=" + TABLE_NAME + "."
 			+ Columns.category_id.name();
+	protected final String SQL_SELECT_BY_COMMUNITY_ID = "SELECT " + TABLE_NAME + "." + Columns.category_id.name() + ", "
+			+ TABLE_NAME + "." + Columns.category_name.name() + ", " + TABLE_NAME + "."
+			+ Columns.category_description.name() + ", " + TABLE_NAME + "." + Columns.category_active.name() + ", "
+			+ TABLE_NAME + "." + Columns.category_user_id.name() + " FROM " + TABLE_NAME + ", "
+			+ TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + " WHERE " + TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP
+			+ ".community_id=? AND " + TABLE_CATEGORY_TO_COMMUNITY_RELATIONSHIP + "." + Columns.category_id.name() + "="
+			+ TABLE_NAME + "." + Columns.category_id.name();
 	protected final String SQL_INSERT_TEST_TO_CATEGORY = "INSERT INTO " + TABLE_TEST_TO_CATEGORY_RELATIONSHIP + " ("
 			+ Columns.category_id.name() + ", " + "test_id" + ") VALUES (?, ?)";
 
@@ -66,9 +75,9 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 			return instance;
 
 	}
-	
+
 	@Override
-	protected Category populateDto(ResultSet rs) throws SQLException {
+	public Category populateDto(ResultSet rs) throws SQLException {
 		Category dto = new Category();
 		dto.setCategoryId(rs.getInt(Columns.category_id.getId()));
 		dto.setCategoryName(rs.getString(Columns.category_name.getId()));
@@ -79,13 +88,7 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 	}
 
 	public List<Category> findAll() {
-		List<Category> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, null, null);
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-		return res;
+		return findByDynamicSelect(SQL_SELECT, null, null);
 	}
 
 	public Category addOrUpdate(Category category) {
@@ -119,11 +122,7 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 
 	public Category findCategoryById(int id) {
 		List<Category> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.category_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		res = findByDynamicSelect(SQL_SELECT, Columns.category_id.name(), Integer.toString(id));
 		if (res != null && res.size() > 0)
 			return res.get(0);
 		return null;
@@ -131,32 +130,34 @@ public class MySqlCategoryDao extends AbstractDao<Category> implements ICategory
 
 	public List<Category> findCategoryByTestId(int id) {
 		List<Category> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT_BY_TEST_ID, new Integer[] { id });
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
+		res = findByDynamicSelect(SQL_SELECT_BY_TEST_ID, new Integer[] { id });
 		if (res != null && res.size() > 0)
 			return res;
-		return null;
+		return new ArrayList<Category>();
 	}
 
 	@Override
 	public List<Category> findCategoryByUserId(int id) {
 		List<Category> res = null;
-		try {
-			res = findByDynamicSelect(SQL_SELECT, Columns.category_user_id.name(), Integer.toString(id));
-		} catch (Exception e) {
-			logger.error(e, e);
-		}
-
-		return res;
+		res = findByDynamicSelect(SQL_SELECT, Columns.category_user_id.name(), Integer.toString(id));
+		if (res != null && res.size() > 0)
+			return res;
+		return new ArrayList<Category>();
 	}
 
 	@Override
 	public boolean assignTestToCategory(int testId, int categoryId) {
 		Object[] sqlParams = new Object[] { categoryId, testId };
 		return dynamicUpdate(SQL_INSERT_TEST_TO_CATEGORY, sqlParams);
+	}
+
+	@Override
+	public List<Category> findCategoryByCommunityId(int id) {
+		List<Category> res = null;
+		res = findByDynamicSelect(SQL_SELECT_BY_COMMUNITY_ID, new Integer[] { id });
+		if (res != null && res.size() > 0)
+			return res;
+		return new ArrayList<Category>();
 	}
 
 }

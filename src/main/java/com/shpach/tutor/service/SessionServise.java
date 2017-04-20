@@ -7,6 +7,18 @@ package com.shpach.tutor.service;
  *
  */
 public class SessionServise {
+	private static SessionServise instance = null;
+
+	private SessionServise() {
+
+	}
+
+	public static synchronized SessionServise getInstance() {
+		if (instance == null) {
+			instance = new SessionServise();
+		}
+		return instance;
+	}
 
 	/**
 	 * Validate users session
@@ -17,7 +29,7 @@ public class SessionServise {
 	 *            - users attribute which should not be empty
 	 * @return true if validation is Ok
 	 */
-	public static boolean checkSession(String sessionId, String userParam) {
+	public boolean checkSession(String sessionId, String userParam) {
 		if (userParam != null)
 			return true;
 		return false;

@@ -13,8 +13,27 @@ import com.shpach.tutor.view.service.MenuStrategy;
  *
  */
 public class LoginService {
+	private static LoginService instance;
+	private IUserDao userDao;
 
-	
+	private LoginService() {
+	}
+
+	public static LoginService getInstance() {
+		if (instance == null) {
+			instance = new LoginService();
+		}
+		return instance;
+	}
+
+	public IUserDao getUserDao() {
+		if (userDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			userDao = daoFactory.getUserDao();
+		}
+		return userDao;
+	}
+
 	/**
 	 * Check if users login (email) and password is correct
 	 * 
@@ -25,10 +44,9 @@ public class LoginService {
 	 * @return {@link User} entity class if users login (email) and password is
 	 *         correct, else return null
 	 */
-	public static boolean checkLogin(String enterLogin, String enterPass) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		IUserDao userDao = daoFactory.getUserDao();
-		User userEntitie = userDao.findUserByEmail(enterLogin);
+	public boolean checkLogin(String enterLogin, String enterPass) {
+
+		User userEntitie = getUserDao().findUserByEmail(enterLogin);
 		if (userEntitie == null)
 			return false;
 		return userEntitie.getUserPassword().equals(enterPass);
@@ -42,7 +60,7 @@ public class LoginService {
 	 *            - {@link User} entity class
 	 * @return String of Command name
 	 */
-	public static String getStartCommandAccordingToUserRole(User user) {
+	public  String getStartCommandAccordingToUserRole(User user) {
 		String res = "";
 		switch (user.getRoleId()) {
 		case MenuStrategy.USER_ROLE_TUTOR: {

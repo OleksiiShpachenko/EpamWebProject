@@ -16,12 +16,34 @@ import com.shpach.tutor.persistance.jdbc.dao.factory.MySqlDaoFactory;
 import com.shpach.tutor.persistance.jdbc.dao.test.ITestDao;
 
 /**
- * Collection of services for {@link Test} entity class
+ * Service layer for {@link Test} entity class
  * 
  * @author Shpachenko_A_K
  *
  */
 public class TestService {
+
+	private static TestService instance;
+	private CategoryService categoryService;
+	private TestQuestionsBankService testQuestionsBankService;
+	private ITestDao testDao;
+	private CommunityService communityService;
+
+	private TestService() {
+		//IDaoFactory daoFactory = new MySqlDaoFactory();
+		//testDao = daoFactory.getTestDao();
+		//communityService = CommunityService.getInstance();
+		//categoryService = CategoryService.getInstance();
+		// testQuestionsBankService = TestQuestionsBankService.getInstance();
+	}
+
+	public static synchronized TestService getInstance() {
+		if (instance == null) {
+			instance = new TestService();
+		}
+		return instance;
+	}
+
 	/**
 	 * Gets count of assigned {@link Test} to {@link User} (creator)
 	 * 
@@ -29,13 +51,19 @@ public class TestService {
 	 *            - {@link User}
 	 * @return count of of assigned {@link Test} to {@link User} (creator)
 	 */
-	public static int getTestsCountByUser(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
+	public int getTestsCountByUser(User user) {
 		List<Test> tests = null;
 		if (user != null)
-			tests = testDao.findTestByUserId(user.getUserId());
+			tests = getTestDao().findTestByUserId(user.getUserId());
 		return (tests == null) ? 0 : tests.size();
+	}
+
+	private ITestDao getTestDao() {
+		if (testDao == null) {
+			IDaoFactory daoFactory = new MySqlDaoFactory();
+			testDao = daoFactory.getTestDao();
+		}
+		return testDao;
 	}
 
 	/**
@@ -45,25 +73,25 @@ public class TestService {
 	 *            - {@link User}
 	 * @return collection of {@link Test}
 	 */
-	public static List<Test> getTestsByUsers(User user) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
-		return testDao.findTestByUserId(user.getUserId());
+	public List<Test> getTestsByUsers(User user) {
+		if (user == null)
+			return null;
+		return getTestDao().findTestByUserId(user.getUserId());
 	}
 
-	/**
-	 * Insert to collection of {@link Test} assigned {@link Community}
-	 * 
-	 * @param tests
-	 *            - collection of {@link Test}
-	 */
-	public static void insertCommunitiesToTests(List<Test> tests) {
-		if (tests == null)
-			return;
-		for (Test item : tests) {
-			item.setCommunities(CommunityService.getCommunityByTest(item));
-		}
-	}
+	// /**
+	// * Insert to collection of {@link Test} assigned {@link Community}
+	// *
+	// * @param tests
+	// * - collection of {@link Test}
+	// */
+	// public void insertCommunitiesToTests(List<Test> tests) {
+	// if (tests == null)
+	// return;
+	// for (Test item : tests) {
+	// item.setCommunities(communityService.getCommunityByTest(item));
+	// }
+	// }
 
 	/**
 	 * Insert to collection of {@link Test} assigned {@link Category}
@@ -71,12 +99,18 @@ public class TestService {
 	 * @param tests
 	 *            - collection of {@link Test}
 	 */
-	public static void insertCategoriesToTests(List<Test> tests) {
+	public void insertCategoriesToTests(List<Test> tests) {
 		if (tests == null)
 			return;
 		for (Test item : tests) {
-			item.setCategories(CategoryService.getCategoryByTest(item));
+			item.setCategories(getCategoryService().getCategoryByTest(item));
 		}
+	}
+
+	private CategoryService getCategoryService() {
+		if(categoryService==null)
+			categoryService = CategoryService.getInstance();
+		return categoryService;
 	}
 
 	/**
@@ -86,24 +120,24 @@ public class TestService {
 	 *            - {@link Category}
 	 * @return collection of {@link Test}
 	 */
-	public static List<Test> getTestsByCategory(Category category) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
-		return testDao.findTestByCategoryId(category.getCategoryId());
+	public List<Test> getTestsByCategory(Category category) {
+		if (category == null)
+			return null;
+		return getTestDao().findTestByCategoryId(category.getCategoryId());
 	}
 
-	/**
-	 * Get collection of {@link Test} assigned to {@link Community}
-	 * 
-	 * @param community
-	 *            - {@link Community}
-	 * @return collection of {@link Test}
-	 */
-	public static List<Test> getTestsByCommunity(Community community) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
-		return testDao.findTestByCommunityId(community.getCommunityId());
-	}
+//	/**
+//	 * Get collection of {@link Test} assigned to {@link Community}
+//	 * 
+//	 * @param community
+//	 *            - {@link Community}
+//	 * @return collection of {@link Test}
+//	 */
+//	public List<Test> getTestsByCommunity(Community community) {
+//		if (community == null)
+//			return null;
+//		return getTestDao().findTestByCommunityId(community.getCommunityId());
+//	}
 
 	/**
 	 * Get {@link Test} by id
@@ -112,10 +146,8 @@ public class TestService {
 	 *            - id of {@link Test}
 	 * @return {@link Test}
 	 */
-	public static Test getTestById(int testId) {
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
-		return testDao.findTestById(testId);
+	public Test getTestById(int testId) {
+		return getTestDao().findTestById(testId);
 	}
 
 	/**
@@ -128,14 +160,13 @@ public class TestService {
 	 *            - list of id of {@link Question}
 	 * @return true if operation success
 	 */
-	public static boolean addNewTestAndAssignQuestions(Test test, String[] questionsId) {
+	public boolean addNewTestAndAssignQuestions(Test test, String[] questionsId) {
 		boolean res = false;
-		IDaoFactory daoFactory = new MySqlDaoFactory();
-		ITestDao testDao = daoFactory.getTestDao();
-		Test testApdated = testDao.addOrUpdate(test);
+		if (test == null || questionsId == null)
+			return res;
+		Test testApdated = getTestDao().addOrUpdate(test);
 		if (testApdated != null) {
-			res = true;
-			assignQuestionsIdToTest(testApdated.getTestId(), questionsId);
+			res = assignQuestionsIdToTest(testApdated.getTestId(), questionsId);
 		}
 		return res;
 	}
@@ -148,11 +179,21 @@ public class TestService {
 	 * @param questionsIdStr
 	 *            - array of id of {@link Question}
 	 */
-	private static void assignQuestionsIdToTest(int testId, String[] questionsIdStr) {
+	private boolean assignQuestionsIdToTest(int testId, String[] questionsIdStr) {
 		List<Integer> questionsId = parceStringArrayToInt(questionsIdStr);
+		if (questionsId == null)
+			return false;
 		for (Integer qId : questionsId) {
-			TestQuestionsBankService.assignTestToQuestion(testId, qId);
+			if (getTestQuestionsBankService().assignTestToQuestion(testId, qId))
+				return false;
 		}
+		return true;
+	}
+
+	private TestQuestionsBankService getTestQuestionsBankService() {
+		if (testQuestionsBankService == null)
+			testQuestionsBankService = TestQuestionsBankService.getInstance();
+		return testQuestionsBankService;
 	}
 
 	/**
@@ -170,6 +211,7 @@ public class TestService {
 				res.add(id);
 			} catch (NumberFormatException ex) {
 				ex.printStackTrace();
+				return null;
 			}
 		}
 		return res;
@@ -183,9 +225,17 @@ public class TestService {
 	 *            {@link User}
 	 * @return count of {@link Test}
 	 */
-	public static int getTestsCountByStudentUser(User user) {
-		List<Community> communities = CommunityService.getCommunitiesByUserWithTestsAndUsers(user);
+	public int getTestsCountByStudentUser(User user) {
+		if (user == null)
+			return 0;
+		List<Community> communities = getCommunityService().getCommunitiesByUserWithCategoriesAndUsers(user);
 		return getUniqueTestCountInCommunitiesList(communities);
+	}
+
+	private CommunityService getCommunityService() {
+		if(communityService ==null)
+			communityService = CommunityService.getInstance();
+		return communityService;
 	}
 
 	/**
@@ -197,9 +247,17 @@ public class TestService {
 	 * @return count of {@link Test}
 	 */
 	private static int getUniqueTestCountInCommunitiesList(List<Community> communities) {
+		if (communities == null)
+			return 0;
 		Set<Test> tests = new HashSet<>();
 		for (Community community : communities) {
-			tests.addAll(community.getTests());
+			if (community.getCategories() != null) {
+				for (Category category : community.getCategories()) {
+					if (category.getTests() != null)
+						tests.addAll(category.getTests());
+				}
+
+			}
 		}
 		return tests.size();
 	}
@@ -212,16 +270,23 @@ public class TestService {
 	 *            - {@link User}
 	 * @return collection of {@link Test}
 	 */
-	public static List<Test> getTestsByStudentUser(User user) {
-		List<Community> communities = CommunityService.getCommunitiesByUserWithTestsAndUsers(user);
+	public List<Test> getTestsByStudentUser(User user) {
+		if (user == null)
+			return null;
+		List<Community> communities = getCommunityService().getCommunitiesByUserWithCategoriesAndUsers(user);
+		if (communities == null)
+			return null;
 		Set<Test> tests = new HashSet<>();
 		for (Community community : communities) {
-			tests.addAll(community.getTests());
+			if (community.getCategories() != null) {
+				for (Category category : community.getCategories()) {
+					if (category.getTests() != null)
+						tests.addAll(category.getTests());
+				}
+			}
 		}
 		return new ArrayList<Test>(tests);
 	}
-
-	
 
 	/**
 	 * Get {@link Test} by id from database with collection of {@link Question}
@@ -231,13 +296,12 @@ public class TestService {
 	 *            - id of {@link Test}
 	 * @return
 	 */
-	public static Test getTestByIdWhithQuestionsAndAnswers(int testId) {
-		List<TestQuestionsBank> questions = TestQuestionsBankService.getTestQuestionsBankWithQuestionsByTestId(testId);
+	public Test getTestByIdWhithQuestionsAndAnswers(int testId) {
+		List<TestQuestionsBank> questions = getTestQuestionsBankService().getTestQuestionsBankWithQuestionsByTestId(testId);
 		return new TestBuilder().setTestFromTemplate(getTestById(testId)).setQuestions(questions).buildForTestTake();
 	}
-	
+
 	public static void insertStudentsCommunitiesToTests(List<Test> tests) {
-		
 
 	}
 

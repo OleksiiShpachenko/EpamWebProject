@@ -9,7 +9,7 @@ import com.shpach.tutor.commands.CommandAssignCategoryToTestDialog;
 import com.shpach.tutor.commands.CommandAssignCommunityToTestDialog;
 import com.shpach.tutor.commands.CommandAssignTestToCategory;
 import com.shpach.tutor.commands.CommandAssignTestToCategoryDialog;
-import com.shpach.tutor.commands.CommandAssignTestToCommunity;
+import com.shpach.tutor.commands.CommandAssignCategoryToCommunity;
 import com.shpach.tutor.commands.CommandAssignTestToCommunityDialog;
 import com.shpach.tutor.commands.CommandAssignTestToQuestion;
 import com.shpach.tutor.commands.CommandAssignTestToQuestionDialog;
@@ -60,7 +60,7 @@ public class ControllerHelper {
 		commands.put("newQuestion", new CommandNewQuestion());
 		commands.put("assignUserToCommunity", new CommandAssignUserToCommunity());
 		commands.put("assignTestToCommunityDialog", new CommandAssignTestToCommunityDialog());
-		commands.put("assignTestToCommunity", new CommandAssignTestToCommunity());
+		commands.put("assignTestToCommunity", new CommandAssignCategoryToCommunity());
 		commands.put("assignTestToCategoryDialog", new CommandAssignTestToCategoryDialog());
 		commands.put("assignTestToCategory", new CommandAssignTestToCategory());
 		commands.put("assignCategoryToTestDialog", new CommandAssignCategoryToTestDialog());
@@ -136,7 +136,7 @@ public class ControllerHelper {
 			User user = (User) request.getSession().getAttribute("userEntity");
 			String startCommand = "login";
 			if (user != null) {
-				startCommand = LoginService.getStartCommandAccordingToUserRole(user);
+				startCommand = LoginService.getInstance().getStartCommandAccordingToUserRole(user);
 			}
 			lastRequest.put("command", new String[] { startCommand });
 			if (lastRequest != null)
